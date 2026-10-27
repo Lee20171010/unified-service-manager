@@ -35,6 +35,7 @@ internal fun UnifiedScreen(
     themeMode: ThemeMode = ThemeMode.System,
     onThemeChange: (ThemeMode) -> Unit = {},
     pluginDocument: suspend (String, JSONObject?) -> String = { _, _ -> error("請先連線") },
+    onDiagnostics: () -> Unit = {},
 ) {
     var pluginEditor by rememberSaveable { mutableStateOf<String?>(null) }
     var exportPluginId by rememberSaveable { mutableStateOf("") }
@@ -587,6 +588,10 @@ internal fun UnifiedScreen(
             onDismiss = { connectionOpen = false },
             onConnect = { base, token -> connect(base, token) },
             connected = state.connected,
+            onDiagnostics = {
+                connectionOpen = false
+                onDiagnostics()
+            },
         )
     form?.let { spec ->
         FormDialog(spec, state.busy, state.error, { form = null }) { body ->
@@ -689,7 +694,8 @@ internal fun UnifiedScreen(
                                                 fields =
                                                     adapter.fields.map {
                                                         it.copy(
-                                                            initial = s.settings[it.name].orEmpty()
+                                                            initial =
+                                                                s.settings[it.name] ?: it.initial
                                                         )
                                                     }
                                             )

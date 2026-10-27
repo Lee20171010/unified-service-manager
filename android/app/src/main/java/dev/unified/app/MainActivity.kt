@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModel
@@ -22,6 +23,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        Diagnostics.record(DiagnosticEvent.ACTIVITY_CREATE)
         enableEdgeToEdge()
         val credentials = Credentials(applicationContext)
         val appearance = ThemePreferences(applicationContext)
@@ -56,11 +58,23 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onStart() {
+        super.onStart()
+        Diagnostics.record(DiagnosticEvent.ACTIVITY_START)
+    }
+
+    override fun onStop() {
+        Diagnostics.record(DiagnosticEvent.ACTIVITY_STOP)
+        super.onStop()
+    }
 }
 
 @Composable
 internal fun AppRoute(vm: MainViewModel, themeMode: ThemeMode, onThemeChange: (ThemeMode) -> Unit) {
     val state by vm.state.collectAsStateWithLifecycle()
+    var diagnosticsOpen by rememberSaveable { mutableStateOf(false) }
+    if (diagnosticsOpen) DiagnosticsDialog(dismiss = { diagnosticsOpen = false })
     val lifecycle = LocalLifecycleOwner.current
     LaunchedEffect(vm, lifecycle) {
         lifecycle.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) { vm.observe() }
@@ -77,6 +91,7 @@ internal fun AppRoute(vm: MainViewModel, themeMode: ThemeMode, onThemeChange: (T
             themeMode,
             onThemeChange,
             vm::pluginDocument,
+            onDiagnostics = { diagnosticsOpen = true },
         )
     }
     state.job?.let { job ->

@@ -8,7 +8,7 @@ on:
       version:
         description: Immutable component version
         required: true
-        default: '0.4.3'
+        default: '0.4.5'
 permissions:
   contents: read
 concurrency:
@@ -39,7 +39,7 @@ jobs:
           [[ "$REVIEWED_COMMIT" =~ ^[0-9a-f]{40}$ ]]
           [[ "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
           test "$(git rev-parse HEAD)" = "$REVIEWED_COMMIT"
-          test "$RELEASE_VERSION" = "0.4.3"
+          test "$RELEASE_VERSION" = "$(python3 scripts/release-version.py)"
           echo "IMAGE_PREFIX=ghcr.io/${REGISTRY_OWNER,,}" >> "$GITHUB_ENV"
           echo "AUDIT_TOOLS=$RUNNER_TEMP/unified-audit-tools" >> "$GITHUB_ENV"
       - name: Install verified audit tools
@@ -48,8 +48,8 @@ jobs:
         run: |
           python3 scripts/test-audit-config.py "$AUDIT_TOOLS/gitleaks"
           python3 scripts/test-image-audit.py "$AUDIT_TOOLS/gitleaks"
-          python3 scripts/check-release-inputs.py --history
-          "$AUDIT_TOOLS/gitleaks" git . --config .gitleaks.toml --log-opts="--all" --redact=100 --no-banner
+          python3 scripts/check-release-inputs.py --history --ref "$REVIEWED_COMMIT"
+          "$AUDIT_TOOLS/gitleaks" git . --config .gitleaks.toml --log-opts="$REVIEWED_COMMIT" --redact=100 --no-banner
       - name: Backend and Web regression tests
         run: bash scripts/test.sh
       - name: Build reviewed images
@@ -111,4 +111,10 @@ jobs:
             image="$IMAGE_PREFIX/unified-$component:$RELEASE_VERSION"
             docker push "$image"
             docker image inspect "$image" --format '{{json .RepoDigests}}' >> "$GITHUB_STEP_SUMMARY"
+          done
+          # Both versioned images must exist before moving the stable aliases.
+          for component in application web; do
+            image="$IMAGE_PREFIX/unified-$component"
+            docker tag "$image:$RELEASE_VERSION" "$image:latest"
+            docker push "$image:latest"
           done

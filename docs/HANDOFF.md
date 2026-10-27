@@ -4,7 +4,7 @@ Read `README.md`, `RUNTIME-0.3.md`, `ARCHITECTURE.md`, `API.md`, `PARITY.md`, an
 
 ## Current implementation
 
-Web, Android and Application are 0.4.3 (native versionCode 11). The selected circular-node U brand is retained. Docker releases are `ghcr.io/lee20171010/unified-application:0.4.3` and `ghcr.io/lee20171010/unified-web:0.4.3`; numeric tags are immutable. Packaging exports already built releases. OMV Compose contains only application and web with relative data/ssh/sources mounts.
+Application, Web and Android are 0.4.5 (native versionCode 13). The selected circular-node U brand is retained. Docker releases are `ghcr.io/lee20171010/unified-application:0.4.5` and `ghcr.io/lee20171010/unified-web:0.4.5`; numeric tags are immutable and latest tracks the reviewed stable release. Packaging exports already built releases. OMV Compose contains only application and web with relative data/ssh/sources mounts.
 
 `backend/docker-entrypoint.sh` starts with root to prepare empty root-owned DATA_DIR/SOURCE_DIR directories through storage_init, then execs the server via the Alpine setpriv package as 10001:10001 with no supplementary groups, zero capability sets and no-new-privileges. SSH remains read-only and its files/permissions are untouched. Docker's default startup capabilities are required; an explicit non-root Docker user skips initialization and needs prepared writable mounts. docker exec defaults to the image's root user; actual server identity must be checked on the running process. See OMV-COMPOSE.md and RELEASE-REVIEW-0.4.3.md. Existing operators should retain their previous images and matching Compose for rollback. Existing deployments retain their mount paths and project identity. Plugin authoring requires Application 0.4.0 or newer; supported plugin changes need no rebuild.
 
@@ -14,7 +14,7 @@ Web, Android and Application are 0.4.3 (native versionCode 11). The selected cir
 
 Plugin pages in both clients create command plugins with custom fields, import JSON via file/paste, preview server validation and export clean JSON. Imports persist in the existing `/data/plugins/catalog/<id>/plugin.json` and take precedence over supplied catalog entries. Installation remains explicit. Read [PLUGIN-AUTHORING.md](PLUGIN-AUTHORING.md) for the developer workflow and [VALIDATION-0.4.0.md](VALIDATION-0.4.0.md) for evidence. Backend document operations are in Application/Plugins; Web UI is `plugin-editor.js`, native UI is `PluginEditor.kt` with requests through MainViewModel. No storage permission is needed for Android's system document picker.
 
-Application owns use cases, validation, installed capability selection, job locks, worker execution and observations. Plugin installation is explicit and persisted centrally. Web and native Android share all resource/plugin/binding/job APIs. The 13 catalog folders are available packages, not automatically installed integrations.
+Application owns use cases, validation, installed capability selection, job locks, worker execution and observations. Plugin installation is explicit and persisted centrally. Web and native Android share all resource/plugin/binding/job APIs. The 11 catalog folders are available packages, not automatically installed integrations.
 
 The production sources are `backend/`, `web/`, `android/`, and `plugins/`. Preserve `prototype/` and `prototype/next/` as independent UI references. Artifacts contains distributable APKs, deployment/image bundles and checksums. `deploy/omv/compose.yaml` and `env.example` provide the manual OMV configuration; see `OMV-COMPOSE.md`.
 
@@ -28,7 +28,11 @@ The production sources are `backend/`, `web/`, `android/`, and `plugins/`. Prese
 
 ## Run and verify
 
-For real-host acceptance, use `scripts/verify-local.py` only with an explicitly authorized private target plan. Keep host-specific outcomes outside the public repository. Current release fixture evidence is in [RELEASE-REVIEW-0.4.3.md](RELEASE-REVIEW-0.4.3.md); device and production-host acceptance remain separate.
+Android 0.4.4 adds local diagnostics under Server → Diagnostic logs, including connection phases, safe exception code frames, JVM uncaught crashes and the prior Android process-exit reason (API 30+). Logs are bounded to 200 events / 64 KiB under noBackupFilesDir; export/share/clear require no server connection. Tokens, URLs, exception messages, response bodies, commands and stack filenames are excluded. The handler preserves Android's original uncaught-exception handling. See `ANDROID-DIAGNOSTICS.md` for the reproduction/export workflow and its limits. The diagnostics feature needs no additional API endpoints.
+
+The user reports the connection switch works on Android 0.4.4 and failed on 0.4.2. The original crash cause is unconfirmed; diagnostic export remains available for future reproduction. Android 0.4.4 passes 42 JVM tests and the Android 16 emulator checks for connection failure/recovery, diagnostic preview, and a system-induced crash followed by export preview in a new process. The physical phone and final system document-picker save remain user acceptance checks. `ConnectionRouteTest`, `DiagnosticsTest` and `DiagnosticsScreenTest` cover local behavior. `scripts/test-android-device.sh` uses isolated packages, synthetic connections and an Android-induced crash/restart to test persistence; operator runtime details and exact current device results stay in ignored local reports. Read `TESTING.md` before running it.
+
+For real-host acceptance, use `scripts/verify-local.py` only with an explicitly authorized private target plan. Keep host-specific outcomes outside the public repository. Current release fixture evidence is in [RELEASE-REVIEW-0.4.5.md](RELEASE-REVIEW-0.4.5.md); device and production-host acceptance remain separate.
 
 Run `bash scripts/test.sh`, then `android/gradlew -p android :app:assembleDebug :app:testDebugUnitTest --max-workers=2`. Export OpenAPI using `scripts/export-api.sh`. Package the APK with `scripts/package-android.sh`. See `TESTING.md` for fixtures and device tests.
 
@@ -42,8 +46,20 @@ Public source and versioned images are published under the project GitHub reposi
 
 - Public distribution gate: review each commit before creation and every commit/content being pushed to GitHub, plus Docker build inputs and all image layers/history/metadata before image publication. Public release review evidence is recorded in SECURITY.md and the release review notes. The user's publication privacy requirement is recorded in AGENTS.md. Backup/migration feature work is deferred during ongoing development.
 - npm user-prefix/project scope is implemented; automatic adoption of host-managed package caches is not.
-- Dedicated bili/auth integrations declare package identity and host compatibility; administrators save application-version-specific register/unregister/probe recipes. OAuth accounts are not managed here.
+- Dedicated billion-context/auth integrations declare package identity and host compatibility; administrators save application-version-specific register/unregister/probe recipes. OAuth accounts are not managed here.
 - Host loaded versions are unknown until explicitly observed. No automatic restart or retry.
 - Job Console opens a new diagnostic shell on the same connection after the managed program exits; preserving the original shell process/cwd is a further terminal improvement.
 - Command/npm interface v1 is implemented. Arbitrary central executable plugins, dependency installers and archive distribution are not.
 - Native physical-device acceptance, actual nas-host path/permission validation, backup-native export interoperability and production APK signing remain separate deployment tasks.
+
+## Plugin defaults · 0.4.5
+
+Release 0.4.5 adds four v1.1.0 Linux/systemd service recipes, renames billion-context (same ID, v1.1.0), and moves generic service/tool examples to examples/plugin-authoring. Exact original factory templates are hidden from discovery even in an existing catalog volume; installed or UI-imported copies remain usable. Nonempty per-instance commands take precedence. Newly introduced fields use manifest defaults, including when editing old resources. Both clients collapse optional command overrides. Android build 0.4.5 (code 13) contains this form change. Publication is performed by the reviewed release workflow; NAS updates remain an administrator action.
+
+Read PLUGIN-CATALOG.md for prerequisites and manual JSON import/Update on persistent catalogs. Source lives in plugin-sources/linux-service.py; regenerate using scripts/build-plugin-catalog.py and check consistency with --check. Core/API schema remains v1. Run fixture tests before changing recipes; systemd/nvm/APT and upstream installers need authorized host-specific acceptance.
+
+Plugin change validation: 96 backend fixture tests, 15 Web tests and 44 Android JVM tests passed; Android 0.4.5 debug APK built. Source credential scanning found no leaks. Service recipes were executed only against isolated fake executables; no user service was upgraded/restarted. The new native form tests use the documented 320dp Robolectric dialog workaround. No new device or production-host acceptance is claimed. The catalog archive contains 11 independent JSON packages plus usage notes; extract and import individual JSON files after the compatible core release. The exact reviewed commit and registry image digests are recorded in the publication workflow and GitHub release assets.
+
+Release maintenance: backend/unified/__init__.py is the release version source; scripts/release-version.py reads it without runtime imports. OMV Compose uses IMAGE_TAG (latest by default). Container fixtures override it with the local candidate version and --pull never. Public-history scans use the reviewed commit ancestry, excluding unrelated local refs; push only refs/heads/main and the explicit reviewed release tag. See RELEASE-REVIEW-0.4.5.md for release gates.
+
+The 0.4.5 security review also closed a legacy /services job-submission race: Application.submit holds the plugin lifecycle RLock while binding settings/versions and creating the durable job. submit_resource can safely nest via the RLock. The deterministic test synchronizes the competing operations and checks the worker's executed version.

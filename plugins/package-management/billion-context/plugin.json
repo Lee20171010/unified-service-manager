@@ -1,7 +1,7 @@
 {
   "id": "billion-context",
-  "label": "bili / billion-context",
-  "version": "1.0.0",
+  "label": "billion-context",
+  "version": "1.1.0",
   "interface_version": 1,
   "driver": "npm",
   "category": "package-management",
@@ -60,7 +60,7 @@
     }
   ],
   "author": "Unified",
-  "description": "bili / billion-context 管理接入；安裝管理插件不會安裝遠端軟體。",
+  "description": "管理 billion-context 的 npm 安裝、版本、升級、卸載及環境檢查；可另行設定 OpenCode／Hermes 接入關係。",
   "resource_kind": "package",
   "package_name": "billion-context",
   "hosts": [

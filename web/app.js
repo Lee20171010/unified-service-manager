@@ -5,7 +5,8 @@ import {
   backupApplications,
   canRestore,
   serviceBody,
-} from "./capabilities.js?v=0.3.0";
+  isCommandOverride,
+} from "./capabilities.js?v=0.4.5";
 import {
   request,
   setToken,
@@ -149,12 +150,16 @@ const submit = (t) =>
 const field = (label, name, value = "", placeholder = "", type = "text") =>
   `<label class="field">${label}<input name="${name}" type="${type}" value="${esc(value)}" placeholder="${esc(placeholder)}" required></label>`;
 function adapterFields(adapter) {
-  return (adapter?.fields || [])
+  const render = fields => fields
     .map(
       (f) =>
         `<label class="field">${esc(f.label)}${f.choices?.length ? `<select name="settings.${esc(f.name)}">${f.choices.map((c) => `<option ${c === f.initial ? "selected" : ""}>${esc(c)}</option>`).join("")}</select>` : `<input name="settings.${esc(f.name)}" value="${esc(f.initial)}" ${f.required ? "required" : ""}>`}</label>`,
     )
     .join("");
+  const fields = adapter?.fields || [];
+  const advanced = fields.filter(f => (isCommandOverride(f.name) && !f.required));
+  return render(fields.filter(f => !(isCommandOverride(f.name) && !f.required))) +
+    (advanced.length ? `<details><summary>進階：自訂操作命令</summary><p>留空使用插件預設操作。填寫後僅覆寫此受管對象；其他對象不受影響。</p>${render(advanced)}</details>` : "");
 }
 function head(eyebrow, title, desc, actions = "") {
   return `${data?.mode === "demo" ? '<div class="notice">DEMO · 操作只模擬執行，資料由中央保存；不會連線真實主機。</div>' : ""}<div class="page-head"><div><div class="eyebrow">${eyebrow}</div><h1>${title}<span class="dot">.</span></h1><p class="description">${desc}</p></div><div class="head-actions">${actions}</div></div>`;
@@ -612,7 +617,7 @@ document.addEventListener("click", async (e) => {
         adapter = serviceAdapters(data).find((a) => a.id === s.adapter);
       modal(
         "編輯設定",
-        `<input type="hidden" name="id" value="${id}"><input type="hidden" name="host" value="${s.host}"><input type="hidden" name="adapter" value="${esc(s.adapter)}">${field("名稱", "name", s.name)}<p>保留主機與安裝身份，可修改版本策略及操作命令。</p>${adapterFields({ ...adapter, fields: adapter.fields.map((f) => ({ ...f, initial: s.settings[f.name] || "" })) })}`,
+        `<input type="hidden" name="id" value="${id}"><input type="hidden" name="host" value="${s.host}"><input type="hidden" name="adapter" value="${esc(s.adapter)}">${field("名稱", "name", s.name)}<p>保留主機與安裝身份，可修改版本策略及操作命令。</p>${adapterFields({ ...adapter, fields: adapter.fields.map((f) => ({ ...f, initial: s.settings[f.name] ?? f.initial })) })}`,
         "edit-resource-form",
         submit("儲存"),
       );

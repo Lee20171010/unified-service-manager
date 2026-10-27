@@ -26,3 +26,10 @@ test('package operations are capability driven without service lifecycle control
   assert.deepEqual(serviceActions({operations:['refresh','install','upgrade','uninstall','doctor']}),['refresh','upgrade','install','uninstall','doctor']);
   assert.deepEqual(serviceActions({operations:[]}),[]);
 });
+
+test('command overrides are separate while serialization preserves them', async () => {
+  const {isCommandOverride,serviceBody} = await modulePromise;
+  assert.equal(isCommandOverride('cmd_restart'),true);
+  assert.equal(isCommandOverride('unit'),false);
+  assert.deepEqual(serviceBody({'settings.unit':'demo.service','settings.cmd_restart':'custom'}).settings,{unit:'demo.service',cmd_restart:'custom'});
+});

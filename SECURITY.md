@@ -8,7 +8,7 @@ Every commit must be reviewed before it is created and before it is pushed. Revi
 
 Local .env files, SSH keys, runtime directories, screenshots, device details, real-host plans and generated distribution artifacts are excluded from Git and Docker build input. Images use explicit COPY instructions and an allowlisted build context. First-run Android connection settings are empty; examples use documentation addresses. The fixed demo token is intentionally public and is rejected by real mode.
 
-The publication workflow is manual. It checks out the exact reviewed commit, scans its full reachable history, builds the two images, scans them, and publishes versioned tags. Only repository read and package write permissions are granted to the workflow. Existing version tags must not be overwritten. Source/revision OCI labels tie packages to the repository and commit.
+The publication workflow is manual. It checks out the exact reviewed commit, scans the full ancestry of that reviewed commit, builds the two images, scans them, and publishes versioned tags. It promotes both latest aliases only after both immutable images are pushed. Only repository read and package write permissions are granted to the workflow. Existing version tags must not be overwritten. Source/revision OCI labels tie packages to the repository and commit.
 
 ## Verification
 

@@ -2,6 +2,7 @@
 """Exercise the shipped OMV Compose using disposable directories and no hosts."""
 
 import json
+import runpy
 import os
 from pathlib import Path
 import secrets
@@ -14,7 +15,8 @@ import urllib.request
 
 
 repo = Path(__file__).resolve().parents[1]
-image = "unified-application:0.4.3"
+VERSION = runpy.run_path(str(repo / "backend/unified/__init__.py"))["__version__"]
+image = "unified-application:" + VERSION
 
 
 def run(*args, env=None):
@@ -26,13 +28,13 @@ def main():
         root = Path(temporary)
         shutil.copyfile(repo / "deploy/omv/compose.yaml", root / "compose.yaml")
         token = secrets.token_hex(32)
-        env = dict(os.environ, ADMIN_TOKEN=token, PORT="0", BIND_ADDRESS="127.0.0.1",
+        env = dict(os.environ, IMAGE_TAG=VERSION, ADMIN_TOKEN=token, PORT="0", BIND_ADDRESS="127.0.0.1",
                    WEBDAV_URL="", WEBDAV_USER="", WEBDAV_PASSWORD="")
         compose = ["docker", "compose", "-p", "unified-storage-test-" + secrets.token_hex(4),
                    "-f", str(root / "compose.yaml")]
 
         def up():
-            run(*compose, "up", "-d", "--force-recreate", env=env)
+            run(*compose, "up", "-d", "--force-recreate", "--pull", "never", env=env)
             address = run(*compose, "port", "web", "80", env=env)
             base = "http://" + address
             for _ in range(60):
@@ -72,7 +74,7 @@ def main():
             assert set(status["Gid"].split()) == {"10001"}
             assert all(int(status[key].strip(),16) == 0 for key in ("CapEff", "CapPrm", "CapBnd", "CapInh", "CapAmb"))
             assert status["NoNewPrivs"].strip() == "1"
-            assert request(base, "/info")["version"] == "0.4.3"
+            assert request(base, "/info")["version"] == VERSION
             # The SSH directory is mounted read-only even for a root exec.
             run(*compose, "exec", "-T", "application", "python", "-c",
                 "import errno; from pathlib import Path\ntry: Path('/run/ssh/probe').touch()\nexcept OSError as e: assert e.errno == errno.EROFS\nelse: raise AssertionError('SSH mount is writable')", env=env)

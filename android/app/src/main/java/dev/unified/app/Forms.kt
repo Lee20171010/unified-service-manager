@@ -53,6 +53,7 @@ internal fun ConnectionDialog(
     onDismiss: () -> Unit,
     onConnect: (String, String) -> Unit,
     connected: Boolean = false,
+    onDiagnostics: () -> Unit = {},
 ) {
     var editing by remember { mutableStateOf(!connected) }
     var base by remember { mutableStateOf(connection.first) }
@@ -94,7 +95,12 @@ internal fun ConnectionDialog(
                 Text(if (editing) "儲存並連線" else "編輯連線")
             }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("關閉") } },
+        dismissButton = {
+            Row {
+                TextButton(onClick = onDiagnostics) { Text("診斷日誌") }
+                TextButton(onClick = onDismiss) { Text("關閉") }
+            }
+        },
     )
 }
 
@@ -131,6 +137,12 @@ internal fun FormDialog(
                     )
                 }
     var confirmed by remember { mutableStateOf(false) }
+    var advanced by remember(spec) { mutableStateOf(false) }
+    fun isOverride(field: FormField) =
+        !field.required &&
+            field.name.removePrefix("settings.") in serviceVocabulary.map { "cmd_$it" }
+    val standardFields = fields.filterNot(::isOverride)
+    val overrideFields = fields.filter(::isOverride)
     AlertDialog(
         onDismissRequest = { if (!busy) dismiss() },
         title = { Text(spec.title) },
@@ -140,7 +152,14 @@ internal fun FormDialog(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 if (spec.note.isNotBlank()) Text(spec.note, fontSize = 12.sp)
-                fields.forEach { field ->
+                val visible = standardFields + if (advanced) overrideFields else emptyList()
+                if (overrideFields.isNotEmpty()) {
+                    TextButton(onClick = { advanced = !advanced }) {
+                        Text(if (advanced) "收起自訂操作命令" else "進階：自訂操作命令")
+                    }
+                    if (advanced) Text("留空使用插件預設操作。填寫後僅覆寫此受管對象。", fontSize = 12.sp)
+                }
+                visible.forEach { field ->
                     if (field.choices.isNotEmpty())
                         Choice(
                             field.label,

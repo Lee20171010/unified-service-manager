@@ -35,6 +35,23 @@ Reports are generated under `android/app/build/reports/tests/testDebugUnitTest/`
 
 Use `scripts/package-android.sh` to rerun tests, build and copy the APK/checksum into `artifacts/`. For low-memory review hosts, run a single Gradle worker and avoid running multiple builds together.
 
+## Android emulator connection checks
+
+Read the operator's private `AGENTS.local.md` for the existing shared runtime and wrapper paths. Configure these without copying host details into the repository:
+
+```bash
+export ANDROID_HOME=/path/to/android-sdk
+export ANDROID_TEST_ADB_WRAPPER=/path/to/configured-adb-wrapper
+export ANDROID_TEST_SESSION_WRAPPER=/path/to/configured-session-lock-wrapper
+bash scripts/test-android-device.sh
+```
+
+The script builds before taking the shared session lock, then holds one lock across discovery, installation, assertions and cleanup. It verifies APK package IDs and refuses to overwrite existing test packages. It installs only `dev.unified.app.acceptance` and its test package, and removes both on exit. It never changes the emulator configuration or installs over the daily app. Use the normal packaging script for a distributable APK; acceptance APKs are test-only.
+
+`ConnectionDeviceTest` exercises the real AppRoute/ViewModel and Android Keystore with synthetic connections: edit a saved server, handle a refused loopback HTTPS connection and rejected credentials, correct the form, save a new connection and reopen its details. Inventory/authentication responses are controlled fixtures; no real server credentials or managed-host operations are used. `ConnectionRouteTest` covers successful workspace switching on the local Robolectric runtime. The script then asks Android to crash only the isolated package and runs `DiagnosticsDeviceTest` in a fresh process to verify the retained exception and export preview. Device tests require the isolated package even when invoked directly. `DiagnosticsTest` verifies bounded persistence, message/URL/credential exclusion, corrupt-file rejection and delegation even if crash recording fails; `DiagnosticsScreenTest` covers the offline entry, preview and clearing.
+
+Reports stay under ignored `.local/android-device-tests/`; app diagnostics are restricted to the isolated package UID. Instrumentation uses Espresso 3.7.0 for the Android 16 input API compatibility fix documented in the [AndroidX Test release notes](https://developer.android.com/jetpack/androidx/releases/test#espresso-3.7.0). These tests do not establish physical-phone or Tailnet acceptance.
+
 ## Required real-device acceptance
 
 Local Compose tests do not establish device rendering, Android Keystore behavior, system document picker integration or tailnet networking. On the intended device:
@@ -79,4 +96,10 @@ Run `scripts/test.sh` and the full Android assemble/unit-test commands after run
 
 ## OMV bind directory initialization
 
-`bash scripts/test.sh` runs storage initialization boundary tests inside the root-owned test container. Build the 0.4.3 images using both local (`unified-application:0.4.3`, `unified-web:0.4.3`) and corresponding GHCR tags from `deploy/omv/compose.yaml`, then run `python3 scripts/test-entrypoint.py` and `python3 scripts/test-omv.py` for an isolated real-mode Compose startup/recreation test using no registered hosts. It uses temporary bind directories, a generated fixture token, a random loopback port and a unique Compose project, and cleans up its own resources. See [RELEASE-REVIEW-0.4.3.md](RELEASE-REVIEW-0.4.3.md) for current evidence and [VALIDATION-ENTRYPOINT.md](VALIDATION-ENTRYPOINT.md) for the original entrypoint verification.
+`bash scripts/test.sh` runs storage initialization boundary tests inside the root-owned test container. Build the release reported by `python3 scripts/release-version.py` using both local (`unified-application:0.4.5`, `unified-web:0.4.5` for this release) and matching numeric GHCR tags. The fixture overrides IMAGE_TAG with that release and uses --pull never, then run `python3 scripts/test-entrypoint.py` and `python3 scripts/test-omv.py` for an isolated real-mode Compose startup/recreation test using no registered hosts. It uses temporary bind directories, a generated fixture token, a random loopback port and a unique Compose project, and cleans up its own resources. See [RELEASE-REVIEW-0.4.5.md](RELEASE-REVIEW-0.4.5.md) for current evidence and [VALIDATION-ENTRYPOINT.md](VALIDATION-ENTRYPOINT.md) for the original entrypoint verification.
+
+## Shipped service recipe defaults
+
+`test_catalog_recipes.py` executes the exported JSON recipes with isolated fake CLI/systemd/npm/APT executables. It covers six operations for all four packages, exact target selection, paths with spaces/metacharacters, failed updates, preserving stopped state, and compatibility of installed legacy templates and instance overrides. `scripts/test.sh` first checks generated JSON against its source. These checks do not operate user services. `PluginDefaultsFormTest` uses the documented 320dp Robolectric #8460 workaround and verifies collapsed overrides survive edits/submission and required author command fields remain visible. Real host acceptance requires an authorized target and matching supported installation.
+
+`test_plugin_submission_race.py` synchronizes a plugin update after its busy-job check with a legacy service submission. Both the recorded and executed plugin versions must match the completed update. The test uses explicit thread events and an observed lock boundary, then runs the actual worker with a fake adapter; no timing-only negative assertion or remote host is used.

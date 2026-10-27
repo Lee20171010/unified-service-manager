@@ -1,13 +1,15 @@
 # Unified Service Manager
 
-Manage services, packages and configuration snapshots across multiple hosts from a Web UI or native Android app. Both clients use the same authenticated central application API. The current release is **0.4.3**.
+Manage services, packages and configuration snapshots across multiple hosts from a Web UI or native Android app. Both clients use the same authenticated central application API. Release **0.4.5** includes ready-made service operations, native [local diagnostic export](docs/ANDROID-DIAGNOSTICS.md), and optional per-instance command overrides.
 
 ## Deploy with Docker Compose
 
 Images are published under:
 
-- `ghcr.io/lee20171010/unified-application:0.4.3`
-- `ghcr.io/lee20171010/unified-web:0.4.3`
+- `ghcr.io/lee20171010/unified-application:latest`
+- `ghcr.io/lee20171010/unified-web:latest`
+
+`latest` tracks the most recent reviewed stable release. Set `IMAGE_TAG=0.4.5` to pin this release. Pulling downloads images; Up recreates containers when needed. Updating images preserves the catalog volume; import newer plugin JSON and explicitly Update installed plugins as described in [the catalog guide](docs/PLUGIN-CATALOG.md).
 
 Use [deploy/omv/compose.yaml](deploy/omv/compose.yaml) with [env.example](deploy/omv/env.example). This configuration also works with ordinary Docker Compose. Set a unique `ADMIN_TOKEN` of at least 32 characters, then run:
 
@@ -16,7 +18,7 @@ docker compose pull
 docker compose up -d
 ```
 
-In OMV Compose, paste the YAML into **File**, the environment template into **Environment**, fill the token, save and select **Up**. See [the OMV guide](docs/OMV-COMPOSE.md) for complete steps.
+In OMV Compose, paste the YAML into **File**, the environment template into **Environment**, retain your existing token or fill a new one, save and select **Pull**, then **Up**. See [the OMV guide](docs/OMV-COMPOSE.md) for complete steps.
 
 The image prepares fresh writable directories and runs the server as UID/GID 10001. Data lives in `./data`, SSH keys in read-only `./ssh`, and configuration snapshot sources in `./sources`. The `plugin-catalog` named volume holds available plugin definitions. Preserve these paths and the Compose project identity during updates.
 
@@ -32,7 +34,7 @@ The Web port binds to `127.0.0.1:4180` by default. Put it behind your HTTPS reve
 - Magpie and Flutter ServerBox configuration snapshots through WebDAV.
 - Light, dark and system appearance; automatic restoration of saved connections.
 
-Fresh instances have no plugins installed. Available definitions do not activate functionality until an administrator installs them. Read [plugin authoring](docs/PLUGIN-AUTHORING.md) and [runtime capabilities](docs/RUNTIME-0.3.md) before adding recipes.
+Fresh instances have no plugins installed. Available definitions do not activate functionality until an administrator installs them. See [the concrete plugin catalog and default operations](docs/PLUGIN-CATALOG.md). Read [plugin authoring](docs/PLUGIN-AUTHORING.md) and [runtime capabilities](docs/RUNTIME-0.3.md) before adding recipes.
 
 ## Local development and demo
 

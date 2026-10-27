@@ -382,6 +382,13 @@ class Application:
     def submit(
         self, action, target, id, scenario="normal", resolved=None, binding=None
     ):
+        # Bind settings/version and persist the job atomically with plugin lifecycle changes.
+        with self.guard:
+            return self._submit_locked(action, target, id, scenario, resolved, binding)
+
+    def _submit_locked(
+        self, action, target, id, scenario="normal", resolved=None, binding=None
+    ):
         if self.config.mode != "demo" and scenario != "normal":
             raise ValueError("模擬情境只適用於 demo 模式")
         if target == "service":

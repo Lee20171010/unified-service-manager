@@ -75,7 +75,7 @@ Both clients offer light, dark and system appearance, defaulting to system. Web 
 
 ## Image release identity
 
-Application and Web have independent numeric Docker release versions. A published tag identifies immutable image contents across deployment platforms. Packaging exports those existing images without rebuilding; changes require a new component tag. Compose pins each component explicitly. Historical naming mappings remain in release validation notes for existing installations.
+Application and Web have independent numeric Docker release versions. A published tag identifies immutable image contents across deployment platforms. Packaging exports those existing images without rebuilding; changes require a new component tag. Compose uses a shared IMAGE_TAG, defaulting to latest; numeric tags provide explicit pinning. The publisher promotes latest only after both immutable component images are pushed. Historical naming mappings remain in release validation notes for existing installations.
 
 ## Container startup and storage
 
@@ -106,3 +106,7 @@ Restore requires a writable **parent** directory mount; bind-mounting the indivi
 - [FastAPI WebSockets](https://fastapi.tiangolo.com/advanced/websockets/)
 - [AsyncSSH client and PTY APIs](https://asyncssh.readthedocs.io/en/latest/)
 - [Android Compose state ownership](https://developer.android.com/develop/ui/compose/state)
+
+## Plugin defaults · 0.4.5
+
+Four service packages v1.1.0 provide Linux/systemd refresh, start, stop, restart, upgrade and doctor operations through existing descriptors. Web and Android use the same operations and fields; optional instance command overrides are under advanced settings and retain their values when collapsed. Nonempty instance commands take precedence over manifest commands; missing newly added settings receive manifest defaults. No new endpoint or schema version is introduced. See [PLUGIN-CATALOG.md](PLUGIN-CATALOG.md) for supported environments, legacy-template preservation and updates through JSON import. Android 0.4.5 carries the new form layout; Application 0.4.5 supplies the override/default semantics.

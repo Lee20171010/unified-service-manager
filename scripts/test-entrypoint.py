@@ -2,12 +2,14 @@
 """Check image entrypoint behavior without network or application operations."""
 
 import json
+import runpy
 from pathlib import Path
 import subprocess
 import tempfile
 
 
-IMAGE = "unified-application:0.4.3"
+VERSION = runpy.run_path(str(Path(__file__).resolve().parents[1] / "backend/unified/__init__.py"))["__version__"]
+IMAGE = "unified-application:" + VERSION
 
 
 def run(options, command):

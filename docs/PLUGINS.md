@@ -1,6 +1,6 @@
 # Plugin lifecycle — accepted target specification
 
-Status: product design specification. UI creation/import/export delivered in 0.4 is documented in [PLUGIN-AUTHORING.md](PLUGIN-AUTHORING.md). The delivered 0.3 subset and precise execution boundaries are documented in [RUNTIME-0.3.md](RUNTIME-0.3.md); use that document for current deployment and package authoring. This specification also retains future refinements.
+Status: product design specification. Current concrete integrations and authoring types are listed in [PLUGIN-CATALOG.md](PLUGIN-CATALOG.md). UI creation/import/export delivered in 0.4 is documented in [PLUGIN-AUTHORING.md](PLUGIN-AUTHORING.md). The delivered 0.3 subset and precise execution boundaries are documented in [RUNTIME-0.3.md](RUNTIME-0.3.md); use that document for current deployment and package authoring. This specification also retains future refinements.
 
 ## Product contract
 
@@ -16,8 +16,8 @@ The initial application coverage is defined in [REQUIREMENTS.md](REQUIREMENTS.md
 
 | Category ID | Display name | Published packages initially planned |
 | --- | --- | --- |
-| `service-management` | 服務管理 | OpenCode; OpenChamber; Hermes; ChatGPT; Docker Compose; generic SSH command/script service management |
-| `package-management` | 套件與應用插件 | npm 套件管理; bili / billion-context; oc-codex-multi-auth |
+| `service-management` | 服務管理 | OpenCode; OpenChamber; Hermes; ChatGPT; Docker Compose |
+| `package-management` | 套件與應用插件 | npm 套件管理; billion-context; oc-codex-multi-auth |
 | `application-backup` | 應用備份 | Magpie; Flutter ServerBox |
 | `backup-storage` | 備份儲存 | WebDAV |
 
@@ -57,10 +57,6 @@ plugins/
       scripts/              # optional executable implementation
       assets/               # optional icons
       tests/                # package contract fixtures
-    ssh-service/
-      plugin.yaml
-      README.md
-      ...
   package-management/
     npm-packages/
       plugin.yaml

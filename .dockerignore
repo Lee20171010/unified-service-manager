@@ -11,6 +11,9 @@
 !backend/tests/**
 !plugins/
 !plugins/**
+!examples/
+!examples/plugin-authoring/
+!examples/plugin-authoring/**
 !web/
 !web/**
 **/__pycache__/

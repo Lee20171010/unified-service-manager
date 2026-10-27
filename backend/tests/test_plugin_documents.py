@@ -82,8 +82,8 @@ def test_document_routes_require_auth_and_exports_are_clean(env):
     _, app, c = env
     for path in ("/plugin-documents", "/plugin-documents/validate"):
         assert c.post("/api/v1" + path, json={"manifest": document()}, headers={"Authorization": "Bearer wrong"}).status_code == 401
-    assert c.get("/api/v1/plugins/ssh-tool/manifest", headers={"Authorization": "Bearer wrong"}).status_code == 401
-    exported = c.get("/api/v1/plugins/ssh-tool/manifest").json()
+    assert c.get("/api/v1/plugins/opencode/manifest", headers={"Authorization": "Bearer wrong"}).status_code == 401
+    exported = c.get("/api/v1/plugins/opencode/manifest").json()
     assert "installed" not in exported and "available" not in exported
     assert c.post("/api/v1/plugin-documents", json={"manifest": exported}).status_code == 201
     assert c.get("/api/v1/plugins/not-present/manifest").status_code == 404

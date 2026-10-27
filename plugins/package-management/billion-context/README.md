@@ -1,4 +1,4 @@
-# bili / billion-context
+# billion-context
 
 Install this Unified management package from Plugin. Register an npm-owned user prefix or project installation; then submit a separate package install/upgrade job. Node 20+ is required by the current upstream package. An installed CLI is distinct from code already loaded by OpenCode/Hermes.
 

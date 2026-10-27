@@ -24,6 +24,7 @@ export const backupApplications = (data) =>
   );
 export const canRestore = (backup) =>
   Boolean(backup?.operations?.includes("restore"));
+export const isCommandOverride = (name) => /^cmd_(refresh|start|stop|restart|upgrade|install|uninstall|doctor|run)$/.test(name);
 export function serviceBody(values) {
   return {
     name: values.name,

@@ -52,6 +52,9 @@ class MainViewModel(
 
     private suspend fun connectWorkspace(base: String, token: String, automatic: Boolean) {
         if (state.value.busy) return
+        Diagnostics.record(
+            if (automatic) DiagnosticEvent.CONNECT_AUTO else DiagnosticEvent.CONNECT_MANUAL
+        )
         if (automatic && (base.isBlank() || token.isBlank())) {
             mutable.update {
                 it.copy(needsCredentials = true, connectionError = "無法讀取已保存的連線，請開啟連線設定重新填寫 Token。")
@@ -63,10 +66,18 @@ class MainViewModel(
         }
         var candidate: ApplicationClient? = null
         try {
+            Diagnostics.record(DiagnosticEvent.VALIDATE_ADDRESS)
             val next = clientFactory(base.trim().trimEnd('/'), token.trim())
             candidate = next
-            val snapshot = parseSnapshot(next.request("/snapshot"))
-            if (!automatic) credentials.save(next.base, token.trim())
+            Diagnostics.record(DiagnosticEvent.FETCH_SNAPSHOT)
+            val response = next.request("/snapshot")
+            Diagnostics.record(DiagnosticEvent.PARSE_SNAPSHOT)
+            val snapshot = parseSnapshot(response)
+            if (!automatic) {
+                Diagnostics.record(DiagnosticEvent.SAVE_CREDENTIALS)
+                credentials.save(next.base, token.trim())
+            }
+            Diagnostics.record(DiagnosticEvent.ACTIVATE_CONNECTION)
             val sameWorkspace = api?.base == next.base
             closeTerminal()
             api?.close()
@@ -86,9 +97,12 @@ class MainViewModel(
                     connecting = false,
                 )
             }
+            Diagnostics.record(DiagnosticEvent.CONNECT_OK)
         } catch (e: CancellationException) {
+            Diagnostics.record(DiagnosticEvent.CONNECT_CANCELLED)
             throw e
         } catch (e: Exception) {
+            Diagnostics.record(DiagnosticEvent.CONNECT_FAILED, e)
             mutable.update {
                 if (automatic)
                     it.copy(
@@ -116,6 +130,8 @@ class MainViewModel(
                 try {
                     val snapshot = parseSnapshot(current.request("/snapshot"))
                     if (api !== current) continue
+                    if (state.value.connectionError != null)
+                        Diagnostics.record(DiagnosticEvent.POLL_RECOVERED)
                     if (api === current)
                         mutable.update {
                             it.copy(snapshot = snapshot, connected = true, connectionError = null)
@@ -151,6 +167,8 @@ class MainViewModel(
                 } catch (e: CancellationException) {
                     throw e
                 } catch (e: Exception) {
+                    if (api === current && state.value.connectionError == null)
+                        Diagnostics.record(DiagnosticEvent.POLL_FAILED, e)
                     if (api === current)
                         mutable.update {
                             it.copy(

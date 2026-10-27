@@ -23,6 +23,7 @@ __pycache__/
 .pytest_cache/
 *.pyc
 .gradle/
+.kotlin/
 **/build/
 local.properties
 *.log

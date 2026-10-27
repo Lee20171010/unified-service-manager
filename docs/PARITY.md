@@ -1,6 +1,6 @@
 # Web / native Android parity · 0.4
 
-Application image 0.4.3 prepares writable directories through its built-in entrypoint. API, schema, authentication and Web/Android operations are unchanged; both clients are 0.4.3.
+Application, Web and Android release 0.4.5 retain API/schema v1. The release adds ready-made service recipes, optional per-instance command overrides and native local diagnostics. Both clients use the same installed plugin descriptors and managed operations.
 
 Both clients use the same central API; no commands run on the client. Themes remain local preferences.
 
@@ -37,3 +37,7 @@ Real command execution has isolated SSH fixture coverage. Android has local Comp
 Client 0.4.1 adds automatic connection and lifecycle recovery using Application 0.4.0. Android first launch still requires explicit configuration; restored processes reconnect without relying on cached credentials in RAM. Inventory/jobs are fetched from the server, while a surviving Activity/ViewModel retains navigation and selected console. System-restored UI uses rememberSaveable keyed by workspace URL; force-stopping/relaunching is not a guarantee of restoring every open dialog. Independent SSH shell connections and expired central sessions are not recreated automatically.
 
 Public release 0.4.3 removes private deployment defaults from both clients and examples. Android first-run fields are empty; previously saved connections are retained. Central backup hardening applies equally to both clients.
+
+## Plugin defaults · 0.4.5
+
+Four service packages v1.1.0 provide Linux/systemd refresh, start, stop, restart, upgrade and doctor operations through existing descriptors. Web and Android use the same operations and fields; optional instance command overrides are under advanced settings and retain their values when collapsed. Nonempty instance commands take precedence over manifest commands; missing newly added settings receive manifest defaults. No new endpoint or schema version is introduced. See [PLUGIN-CATALOG.md](PLUGIN-CATALOG.md) for supported environments, legacy-template preservation and updates through JSON import. Android 0.4.5 carries the new form layout; Application 0.4.5 supplies the override/default semantics.

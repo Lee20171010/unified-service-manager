@@ -1,6 +1,7 @@
 services:
   application:
-    image: ghcr.io/lee20171010/unified-application:0.4.3
+    image: ghcr.io/lee20171010/unified-application:${IMAGE_TAG:-latest}
+    pull_policy: always
     restart: unless-stopped
     environment:
       UNIFIED_MODE: ssh
@@ -22,7 +23,8 @@ services:
       timeout: 3s
       retries: 5
   web:
-    image: ghcr.io/lee20171010/unified-web:0.4.3
+    image: ghcr.io/lee20171010/unified-web:${IMAGE_TAG:-latest}
+    pull_policy: always
     restart: unless-stopped
     ports:
       - ${BIND_ADDRESS:-127.0.0.1}:${PORT:-4180}:80

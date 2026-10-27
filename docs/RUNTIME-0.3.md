@@ -15,22 +15,22 @@ The review demo deliberately simulates programs. Real mode executes SSH commands
 
 ## Available integrations
 
-13 independently versioned JSON package folders are supplied under `plugins/<category>/<id>/`:
+11 independently versioned JSON package folders are supplied under `plugins/<category>/<id>/`:
 
-- Service management: `compose`, `opencode`, `openchamber`, the review host, `chatgpt`, `ssh-service`, `ssh-tool`.
+- Service management: `compose`, `opencode`, `openchamber`, `hermes`, `chatgpt`.
 - Package management: `npm-packages`, `billion-context`, `oc-codex-multi-auth`.
 - Application backup: `magpie`, `serverbox`.
 - Backup storage: `webdav`.
 
-Named application service integrations use administrator-configured commands matching each machine's actual installation. They do not guess whether an application uses systemd, Compose, a launcher or another supervisor. Set the working directory, stable instance identity and required action commands. An unset command does not appear as an action. `ssh-tool` exposes Run and a parameter string, available to the recipe as `UNIFIED_ARGUMENTS`; quote it inside the recipe. Additional manifest fields become `UNIFIED_<UPPERCASE_FIELD>` environment variables.
+Named service plugins ship Linux/systemd defaults with per-instance command overrides. See [the catalog guide](PLUGIN-CATALOG.md) for the supported installation paths and upgrade behavior. Service and tool are authoring choices; create a concrete plugin from the Plugin page. Additional manifest fields become `UNIFIED_<UPPERCASE_FIELD>` environment variables.
 
 A status recipe can print `active`, `running`, `online`, `inactive`, `stopped`, `failed`, or JSON such as `{"status":"online","version":"1.2.3"}`. Other output gives unknown status. Ensure the observation recipe exits successfully for valid stopped states (for example, `systemctl is-active my-unit || true`). Command exit success alone does not prove the service is running.
 
-The npm integrations manage explicit user-prefix and project installations. The dedicated bili/auth packages fix the npm package identity and declare compatible hosts. They do not take ownership of pre-existing OpenCode-managed caches or run upstream account commands. Register that actual installation layout only after checking it; this release supports npm-owned scopes, not every application's private cache format. `billion-context` requires Node 20+; current `oc-codex-multi-auth` requires Node 22.19+. Check the installed package's own engine requirements when choosing a version.
+The npm integrations manage explicit user-prefix and project installations. The dedicated billion-context/auth packages fix the npm package identity and declare compatible hosts. They do not take ownership of pre-existing OpenCode-managed caches or run upstream account commands. Register that actual installation layout only after checking it; this release supports npm-owned scopes, not every application's private cache format. `billion-context` requires Node 20+; current `oc-codex-multi-auth` requires Node 22.19+. Check the installed package's own engine requirements when choosing a version.
 
 ## Host bindings
 
-A package can be associated with compatible services on the same host/account. bili permits OpenCode and Hermes; oc-codex-multi-auth permits OpenCode. Association is a stored record. Register/unregister are separate jobs using explicitly saved administrator recipes. Recipes receive `UNIFIED_PACKAGE`, `UNIFIED_DIRECTORY`, and `UNIFIED_VERSION`; use the upstream integration procedure for the actual application version. OAuth pools and credentials are outside these forms.
+A package can be associated with compatible services on the same host/account. billion-context permits OpenCode and Hermes; oc-codex-multi-auth permits OpenCode. Association is a stored record. Register/unregister are separate jobs using explicitly saved administrator recipes. Recipes receive `UNIFIED_PACKAGE`, `UNIFIED_DIRECTORY`, and `UNIFIED_VERSION`; use the upstream integration procedure for the actual application version. OAuth pools and credentials are outside these forms.
 
 A successful registration recipe records registration intent. Installed package version and observed loaded version remain separate. Upgrade marks registered hosts as needing restart/check, and does not restart them. Restarting a host invalidates its loaded observation; it does not invent a loaded version. A separate saved probe must output an exact version, `none` (not loaded), or `unknown`. Uninstall is rejected while a relation is registered, still loaded, or unknown. To unload: unregister, restart/stop as appropriate, then run the probe. Re-associating the same host updates its recipes without discarding relation state.
 

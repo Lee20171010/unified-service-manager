@@ -198,9 +198,9 @@ class ResourceAdapter:
         return version
 
     def command(self, s, action):
-        command = self.manifest.get("commands", {}).get(action) or s.get(
-            "cmd_" + action
-        )
+        # Updating a plugin supplies newly introduced instance defaults while retaining overrides.
+        s = self.validate(s)
+        command = s.get("cmd_" + action) or self.manifest.get("commands", {}).get(action)
         if not command:
             raise ValueError("請設定此操作的命令：" + action)
         # Commands are saved administrator-authored recipes. Values bind as env, not shell source.

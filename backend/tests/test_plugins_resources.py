@@ -61,7 +61,8 @@ def action(c, id, action, **kw):
 def test_zero_plugins_and_install_persistence(env):
     cfg, app, c = env
     snap = c.get("/api/v1/snapshot").json()
-    assert len(snap["plugins"]) == 13
+    assert len(snap["plugins"]) == 11
+    assert not {"ssh-service", "ssh-tool"} & {p["id"] for p in snap["plugins"]}
     assert not snap["adapters"]["adapters"]
     assert all(not s["available"] for s in snap["services"])
     legacy = app.store.get("services", "s1")

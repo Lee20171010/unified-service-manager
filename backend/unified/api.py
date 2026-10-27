@@ -21,7 +21,7 @@ from .models import (
 from .store import Conflict
 from .terminal import serve_terminal
 
-VERSION = "0.4.3"
+from . import __version__ as VERSION
 
 
 def create_app(config=None, registry=None):

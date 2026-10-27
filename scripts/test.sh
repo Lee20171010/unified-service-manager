@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 cd "$(dirname "$0")/.."
+python3 scripts/build-plugin-catalog.py --check
 docker build -f backend/Dockerfile -t unified-application .
 docker build -f backend/Dockerfile.test -t unified-tests .
 docker run --rm unified-tests

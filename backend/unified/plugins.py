@@ -25,6 +25,13 @@ ACTIONS = {
 
 MAX_DOCUMENT_BYTES = 131072
 
+# Exact v1 factory templates can remain in an existing OMV catalog volume.
+# Installed copies still appear via catalog() and retain their lifecycle/commands.
+RETIRED_FACTORY_TEMPLATES = {
+    "ssh-service": "7d4a7c648e968960851e49b0c107524756b7dc9d4cbdb7142f5f7eaa9a277927",
+    "ssh-tool": "e59a7f3143fb4ab9f2d2123d6993d37b1a6c9438749c2a85de5234c8ede822e0",
+}
+
 
 def manifest_bytes(m):
     try:
@@ -167,6 +174,8 @@ class Plugins:
                 if path.is_symlink() or path.stat().st_size > 131072:
                     continue
                 m = validate_manifest(json.loads(path.read_text()))
+                if hashlib.sha256(manifest_bytes(m)).hexdigest() == RETIRED_FACTORY_TEMPLATES.get(m["id"]):
+                    continue
                 if m["id"] in found:
                     raise ValueError("PLUGIN_MANIFEST: duplicate catalog id")
                 found[m["id"]] = m

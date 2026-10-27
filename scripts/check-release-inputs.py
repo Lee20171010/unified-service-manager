@@ -7,7 +7,8 @@ import subprocess
 import sys
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--history', action='store_true', help='Check every reachable commit tree')
+parser.add_argument('--history', action='store_true', help='Check every commit reachable from --ref')
+parser.add_argument('--ref', default='HEAD', help='Public release tip to inspect; excludes unrelated local refs')
 args = parser.parse_args()
 patterns = [
     ('private-network-name', re.compile(rb'\b[a-zA-Z0-9][a-zA-Z0-9.-]+\.ts\.net\b')),
@@ -18,7 +19,7 @@ forbidden_roots = {'data', 'ssh', 'sources', 'secrets', 'artifacts', 'preview', 
 forbidden_suffixes = {'.pem', '.key', '.p12', '.pfx', '.jks', '.keystore'}
 seen = set()
 failures = []
-refs = subprocess.check_output(['git', 'rev-list', '--all'], text=True).splitlines() if args.history else [subprocess.check_output(['git', 'write-tree'], text=True).strip()]
+refs = subprocess.check_output(['git', 'rev-list', args.ref], text=True).splitlines() if args.history else [subprocess.check_output(['git', 'write-tree'], text=True).strip()]
 for ref in refs:
     for entry in subprocess.check_output(['git', 'ls-tree', '-rz', ref]).split(b'\0'):
         if not entry:

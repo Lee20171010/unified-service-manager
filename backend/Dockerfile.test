@@ -5,5 +5,6 @@ COPY backend/requirements-dev.txt backend/requirements.txt backend/requirements-
 RUN python -m ensurepip \
     && python -m pip install --no-cache-dir -r /test-deps/requirements-dev.txt
 COPY backend/tests /app/tests
+COPY examples/plugin-authoring /app/legacy-plugin-examples
 ENV PYTHONPATH=/app
 CMD ["pytest", "-q", "tests"]

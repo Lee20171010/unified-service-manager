@@ -1,10 +1,10 @@
 # API · 0.4
 
-Application image 0.4.3 prepares writable directories through its built-in entrypoint. API, schema, authentication and Web/Android operations are unchanged; both clients are 0.4.3.
+Application, Web and Android release 0.4.5 retain API/schema v1. The release adds ready-made service recipes, optional per-instance command overrides and native local diagnostics. Both clients use the same installed plugin descriptors and managed operations.
 
 Web, Android and Application 0.4.0 add plugin document authoring. Existing resource and job APIs remain compatible; schema version stays v1.
 
-Application `/info.version` and `/healthz.version` report 0.4.3. `api_version` remains 1; initialization does not change endpoints or request/response schemas.
+Application `/info.version` and `/healthz.version` report 0.4.5. `api_version` remains 1; initialization does not change endpoints or request/response schemas.
 
 All `/api/v1` resource, plugin, job and snapshot endpoints require the administrator Bearer token. `/info` and `/healthz` expose version/mode only. Tokens never appear in URLs. OpenAPI is generated in [openapi.json](openapi.json).
 
@@ -47,3 +47,9 @@ Plugin documents use interface v1 and a maximum canonical JSON size of 128 KiB. 
 Client 0.4.1 uses the same API for automatic saved-connection restoration. Transient network failures retry snapshot/job/session reads only. HTTP 401/403 requires explicit credential correction. POST mutations, job input and terminal creation are never automatically replayed.
 
 Client 0.4.2 changes connection presentation only: server-name entry, server details and explicit credential editing. It uses Application 0.4.0 with the existing requests and authentication model.
+
+## Plugin defaults · 0.4.5
+
+Four service packages v1.1.0 provide Linux/systemd refresh, start, stop, restart, upgrade and doctor operations through existing descriptors. Web and Android use the same operations and fields; optional instance command overrides are under advanced settings and retain their values when collapsed. Nonempty instance commands take precedence over manifest commands; missing newly added settings receive manifest defaults. No new endpoint or schema version is introduced. See [PLUGIN-CATALOG.md](PLUGIN-CATALOG.md) for supported environments, legacy-template preservation and updates through JSON import. Android 0.4.5 carries the new form layout; Application 0.4.5 supplies the override/default semantics.
+
+Legacy service and backup submissions share Application's plugin lifecycle lock with resource submissions. Plugin version/settings binding and durable job insertion form one guarded operation; plugin changes cannot pass their busy-job check concurrently with an older binding being queued.
