@@ -1,0 +1,15 @@
+{
+  "id": "serverbox",
+  "label": "Flutter ServerBox",
+  "version": "1.0.0",
+  "interface_version": 1,
+  "driver": "backup",
+  "category": "application-backup",
+  "operations": [
+    "backup",
+    "restore"
+  ],
+  "fields": [],
+  "author": "Unified",
+  "description": "Flutter ServerBox 管理接入；安裝管理插件不會安裝遠端軟體。"
+}

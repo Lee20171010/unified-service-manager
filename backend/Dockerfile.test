@@ -1,0 +1,9 @@
+FROM unified-application:latest
+USER root
+ENTRYPOINT []
+COPY backend/requirements-dev.txt backend/requirements.txt backend/requirements-lock.txt /test-deps/
+RUN python -m ensurepip \
+    && python -m pip install --no-cache-dir -r /test-deps/requirements-dev.txt
+COPY backend/tests /app/tests
+ENV PYTHONPATH=/app
+CMD ["pytest", "-q", "tests"]

@@ -1,0 +1,22 @@
+# Allow only runtime inputs and test inputs; Dockerfiles COPY explicit subsets.
+**
+!backend/
+!backend/Dockerfile
+!backend/Dockerfile.test
+!backend/docker-entrypoint.sh
+!backend/requirements*.txt
+!backend/unified/
+!backend/unified/**
+!backend/tests/
+!backend/tests/**
+!plugins/
+!plugins/**
+!web/
+!web/**
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+**/.env
+**/.env.*
+**/*.pem
+**/*.key

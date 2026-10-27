@@ -1,0 +1,44 @@
+{
+  "id": "ssh-tool",
+  "label": "一次性工具",
+  "version": "1.0.0",
+  "interface_version": 1,
+  "driver": "commands",
+  "category": "service-management",
+  "operations": [
+    "run"
+  ],
+  "fields": [
+    {
+      "name": "directory",
+      "label": "工作目錄",
+      "initial": "/opt",
+      "required": true,
+      "choices": []
+    },
+    {
+      "name": "identity",
+      "label": "工具識別名稱",
+      "initial": "",
+      "required": true,
+      "choices": []
+    },
+    {
+      "name": "cmd_run",
+      "label": "執行命令",
+      "initial": "",
+      "required": true,
+      "choices": []
+    },
+    {
+      "name": "arguments",
+      "label": "參數（命令中使用 \"$UNIFIED_ARGUMENTS\"）",
+      "initial": "",
+      "required": false,
+      "choices": []
+    }
+  ],
+  "author": "Unified",
+  "description": "一次性工具 管理接入；安裝管理插件不會安裝遠端軟體。",
+  "resource_kind": "tool"
+}

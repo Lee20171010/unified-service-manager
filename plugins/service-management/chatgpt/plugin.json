@@ -1,0 +1,68 @@
+{
+  "id": "chatgpt",
+  "label": "ChatGPT",
+  "version": "1.0.0",
+  "interface_version": 1,
+  "driver": "commands",
+  "category": "service-management",
+  "operations": [
+    "refresh",
+    "start",
+    "stop",
+    "restart",
+    "upgrade"
+  ],
+  "fields": [
+    {
+      "name": "directory",
+      "label": "工作目錄",
+      "initial": "/opt",
+      "required": true,
+      "choices": []
+    },
+    {
+      "name": "identity",
+      "label": "實例識別名稱",
+      "initial": "chatgpt",
+      "required": true,
+      "choices": []
+    },
+    {
+      "name": "cmd_refresh",
+      "label": "狀態命令",
+      "initial": "",
+      "required": false,
+      "choices": []
+    },
+    {
+      "name": "cmd_start",
+      "label": "啟動命令",
+      "initial": "",
+      "required": false,
+      "choices": []
+    },
+    {
+      "name": "cmd_stop",
+      "label": "停止命令",
+      "initial": "",
+      "required": false,
+      "choices": []
+    },
+    {
+      "name": "cmd_restart",
+      "label": "重啟命令",
+      "initial": "",
+      "required": false,
+      "choices": []
+    },
+    {
+      "name": "cmd_upgrade",
+      "label": "升級命令",
+      "initial": "",
+      "required": false,
+      "choices": []
+    }
+  ],
+  "author": "Unified",
+  "description": "ChatGPT 管理接入；安裝管理插件不會安裝遠端軟體。"
+}

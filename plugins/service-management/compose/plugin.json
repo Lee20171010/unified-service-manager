@@ -1,0 +1,26 @@
+{
+  "id": "compose",
+  "label": "Docker Compose",
+  "version": "1.0.0",
+  "interface_version": 1,
+  "driver": "compose",
+  "category": "service-management",
+  "operations": [
+    "refresh",
+    "start",
+    "stop",
+    "restart",
+    "upgrade"
+  ],
+  "fields": [
+    {
+      "name": "compose_dir",
+      "label": "Compose 專案目錄",
+      "initial": "/opt/stacks/",
+      "required": true,
+      "choices": []
+    }
+  ],
+  "author": "Unified",
+  "description": "Docker Compose 管理接入；安裝管理插件不會安裝遠端軟體。"
+}

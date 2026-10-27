@@ -1,0 +1,34 @@
+# Local secrets and runtime state
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+/secrets/
+/data/
+/ssh/
+/sources/
+/.local/
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+
+# Development/build outputs
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+.gradle/
+**/build/
+local.properties
+*.log
+
+# Local distribution files and private review evidence
+/artifacts/
+/preview/
+/docs/validation/
+/docs/VALIDATION-LOCAL-*.md

@@ -1,0 +1,15 @@
+[extend]
+useDefault = true
+
+# Public Python release-signing key fingerprint from docker-library/python:
+# https://github.com/docker-library/python/blob/master/3.12/alpine3.23/Dockerfile
+# This is public verification metadata in the official base image, not a secret.
+[[rules]]
+id = "generic-api-key"
+
+[[rules.allowlists]]
+description = "Official Python public signing fingerprint in image configuration"
+condition = "AND"
+paths = ['''(^|/)config-[0-9]+\.json$''']
+regexTarget = "match"
+regexes = ['''GPG_KEY=7169605F62C751356D054A26A821E680E5FA6305["\s]''']

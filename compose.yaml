@@ -1,0 +1,38 @@
+name: unified
+services:
+  application:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    environment:
+      UNIFIED_MODE: ${UNIFIED_MODE:-ssh}
+      ADMIN_TOKEN: ${ADMIN_TOKEN:?Run scripts/configure.py first}
+      WEBDAV_URL: ${WEBDAV_URL:-}
+      WEBDAV_USER: ${WEBDAV_USER:-}
+      WEBDAV_PASSWORD: ${WEBDAV_PASSWORD:-}
+    volumes:
+      - application-data:/data
+      - ${PLUGIN_CATALOG:-./plugins}:/plugin-catalog:ro
+      - ${SSH_DIR:-./secrets/ssh}:/run/ssh:ro
+      - ${SOURCE_DIR:-./data/sources}:/sources
+    init: true
+    stop_grace_period: 60s
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+  web:
+    build:
+      context: .
+      dockerfile: web/Dockerfile
+    restart: unless-stopped
+    ports:
+      - ${BIND_ADDRESS:-127.0.0.1}:${PORT:-4180}:80
+    depends_on:
+      application:
+        condition: service_healthy
+volumes:
+  application-data:

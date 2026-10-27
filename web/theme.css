@@ -1,0 +1,75 @@
+/* Appearance overrides share the existing layout; console output keeps its terminal palette. */
+:root { color-scheme: light; }
+#theme-mode {
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 8px 10px;
+  min-height: 40px;
+  width: 116px;
+  font-size: 12px;
+}
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #101916;
+  --paper: #1a2721;
+  --ink: #e5eee8;
+  --muted: #adbbb2;
+  --line: #35493d;
+  --green: #a3d9b8;
+  --mint: #253d30;
+  --amber: #e8bb77;
+  --red: #ffb4a6;
+  --chrome: #142019;
+  --error-surface: #492b28;
+  --warning-surface: #443822;
+}
+html[data-theme="dark"] :is(.sidebar, .topbar, .service-table th, .modal-foot, .console-tools, .console-hint) {
+  background: var(--chrome);
+}
+html[data-theme="dark"] :is(.panel, .stat, .host-mini, .button, .icon-button, .tab.active, .nav-item .count, .search input, select, .field input, dialog) {
+  background: var(--paper);
+  color: var(--ink);
+}
+html[data-theme="dark"] :is(.tabs, .progress, .avatar) { background: var(--bg); }
+html[data-theme="dark"] :is(.nav-item.active, .nav-item:hover, .host-icon, .workspace-icon, .service-logo, .tag, .activity-symbol, .backup-summary, .notice, .action-icon:hover) {
+  background: var(--mint);
+  color: var(--green);
+  border-color: var(--line);
+}
+html[data-theme="dark"] :is(.button:hover, .host-mini:hover) { border-color: var(--green); }
+html[data-theme="dark"] .button.primary {
+  background: var(--green);
+  color: #112c1d;
+  border-color: var(--green);
+}
+html[data-theme="dark"] .button.primary:hover { background: #bce8cd; }
+html[data-theme="dark"] :is(.button.danger, .status.failed, .activity-symbol.failed) {
+  color: var(--red);
+  background: var(--error-surface);
+  border-color: #78453c;
+}
+html[data-theme="dark"] :is(.danger-note, .status.degraded) { background: var(--warning-surface); color: var(--amber); }
+html[data-theme="dark"] .status { background: var(--mint); color: var(--green); }
+html[data-theme="dark"] .status.stopped { background: #303c34; color: #cad2cc; }
+html[data-theme="dark"] .status.running { background: #283b51; color: #b2d0f6; }
+html[data-theme="dark"] .status.failed { background: var(--error-surface); color: var(--red); }
+html[data-theme="dark"] .status.degraded { background: var(--warning-surface); color: var(--amber); }
+html[data-theme="dark"] :is(.stat-value, .host-health) { color: var(--green); }
+html[data-theme="dark"] :is(.nav-label, .nav-item, .eyebrow, .stat-label svg, .stat-note, .section-top h2 span, .tab span, .search svg, .service-table th, .service-name small, .host-cell, .version, .action-icon, .table-footer, .activity-content small, .activity-time, .backup-summary small, .backup-clients, .page-footer, .architecture-central p) {
+  color: var(--muted);
+}
+html[data-theme="dark"] .nav-item.active { color: var(--green); }
+html[data-theme="dark"] input::placeholder { color: var(--muted); }
+html[data-theme="dark"] :is(.service-table td, .activity-row, .avatar, .field input, .field select, .architecture-central) { border-color: var(--line); }
+html[data-theme="dark"] .form-error { color: var(--red); }
+html[data-theme="dark"] .pulse { box-shadow: 0 0 0 4px var(--mint); }
+html[data-theme="dark"] dialog::backdrop { background: #050c09b8; }
+.log-time { color: #a8bbb0; }
+@media (max-width: 720px) {
+  .topbar { min-height: 64px; height: auto; padding: 10px 12px; gap: 8px; }
+  .topbar .mock-indicator, .topbar .breadcrumb, .topbar .slash { display: none; }
+  .topbar-right { gap: 6px; }
+  #theme-mode { width: 108px; font-size: 11px; }
+}

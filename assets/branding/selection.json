@@ -1,0 +1,8 @@
+{
+  "selected_asset": "unified-network-icon-v1.png",
+  "description": "圆形节点组成 U，深绿背景、米白连接、浅绿中心节点",
+  "selected_by": "user",
+  "integration_status": "web-and-android-0.3.2",
+  "web_asset": "web/assets/unified-brand.png",
+  "android_asset": "android/app/src/main/res/drawable-nodpi/unified_brand.png"
+}

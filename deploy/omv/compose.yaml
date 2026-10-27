@@ -1,0 +1,34 @@
+services:
+  application:
+    image: ghcr.io/lee20171010/unified-application:0.4.3
+    restart: unless-stopped
+    environment:
+      UNIFIED_MODE: ssh
+      ADMIN_TOKEN: ${ADMIN_TOKEN:?Fill ADMIN_TOKEN in the OMV Environment field}
+      WEBDAV_URL: ${WEBDAV_URL:-}
+      WEBDAV_USER: ${WEBDAV_USER:-}
+      WEBDAV_PASSWORD: ${WEBDAV_PASSWORD:-}
+    volumes:
+      - ./data:/data
+      - plugin-catalog:/plugin-catalog:ro
+      - ./ssh:/run/ssh:ro
+      - ./sources:/sources
+    init: true
+    stop_grace_period: 60s
+    security_opt: [no-new-privileges:true]
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+  web:
+    image: ghcr.io/lee20171010/unified-web:0.4.3
+    restart: unless-stopped
+    ports:
+      - ${BIND_ADDRESS:-127.0.0.1}:${PORT:-4180}:80
+    depends_on:
+      application:
+        condition: service_healthy
+
+volumes:
+  plugin-catalog:

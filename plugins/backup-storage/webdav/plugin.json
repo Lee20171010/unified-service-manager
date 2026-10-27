@@ -1,0 +1,15 @@
+{
+  "id": "webdav",
+  "label": "WebDAV",
+  "version": "1.0.0",
+  "interface_version": 1,
+  "driver": "webdav",
+  "category": "backup-storage",
+  "operations": [
+    "upload",
+    "download"
+  ],
+  "fields": [],
+  "author": "Unified",
+  "description": "WebDAV 管理接入；安裝管理插件不會安裝遠端軟體。"
+}

@@ -1,0 +1,110 @@
+name: Publish reviewed Docker images
+on:
+  workflow_dispatch:
+    inputs:
+      reviewed_commit:
+        description: Full commit SHA already reviewed for security and privacy
+        required: true
+      version:
+        description: Immutable component version
+        required: true
+        default: '0.4.3'
+permissions:
+  contents: read
+concurrency:
+  group: reviewed-container-publication
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    permissions:
+      contents: read
+      packages: write
+    env:
+      RELEASE_VERSION: ${{ inputs.version }}
+      REVIEWED_COMMIT: ${{ inputs.reviewed_commit }}
+      REGISTRY_OWNER: ${{ github.repository_owner }}
+      SOURCE_REPOSITORY: ${{ github.repository }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          ref: ${{ inputs.reviewed_commit }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify release identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$REVIEWED_COMMIT" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$RELEASE_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]
+          test "$(git rev-parse HEAD)" = "$REVIEWED_COMMIT"
+          test "$RELEASE_VERSION" = "0.4.3"
+          echo "IMAGE_PREFIX=ghcr.io/${REGISTRY_OWNER,,}" >> "$GITHUB_ENV"
+          echo "AUDIT_TOOLS=$RUNNER_TEMP/unified-audit-tools" >> "$GITHUB_ENV"
+      - name: Install verified audit tools
+        run: bash scripts/install-audit-tools.sh "$AUDIT_TOOLS"
+      - name: Check every commit and source content
+        run: |
+          python3 scripts/test-audit-config.py "$AUDIT_TOOLS/gitleaks"
+          python3 scripts/test-image-audit.py "$AUDIT_TOOLS/gitleaks"
+          python3 scripts/check-release-inputs.py --history
+          "$AUDIT_TOOLS/gitleaks" git . --config .gitleaks.toml --log-opts="--all" --redact=100 --no-banner
+      - name: Backend and Web regression tests
+        run: bash scripts/test.sh
+      - name: Build reviewed images
+        shell: bash
+        run: |
+          set -euo pipefail
+          for component in application web; do
+            dockerfile=backend/Dockerfile
+            if [ "$component" = web ]; then dockerfile=web/Dockerfile; fi
+            docker build --platform linux/amd64 -f "$dockerfile" \
+              --label "org.opencontainers.image.source=https://github.com/$SOURCE_REPOSITORY" \
+              --label "org.opencontainers.image.revision=$REVIEWED_COMMIT" \
+              --label "org.opencontainers.image.version=$RELEASE_VERSION" \
+              -t "unified-$component:$RELEASE_VERSION" \
+              -t "$IMAGE_PREFIX/unified-$component:$RELEASE_VERSION" .
+          done
+      - name: Container startup and persistence checks
+        run: |
+          python3 scripts/test-entrypoint.py
+          python3 scripts/test-omv.py
+      - name: Scan every image layer and vulnerabilities
+        shell: bash
+        run: |
+          set -euo pipefail
+          for component in application web; do
+            image="$IMAGE_PREFIX/unified-$component:$RELEASE_VERSION"
+            docker image save "$image" -o "$RUNNER_TEMP/$component.tar"
+            python3 scripts/expand-image-for-audit.py "$RUNNER_TEMP/$component.tar" "$RUNNER_TEMP/$component-layers"
+            "$AUDIT_TOOLS/gitleaks" dir "$RUNNER_TEMP/$component-layers" --config .gitleaks.toml --redact=100 --no-banner
+            "$AUDIT_TOOLS/trivy" image --quiet --scanners vuln --severity HIGH,CRITICAL --exit-code 1 "$image"
+          done
+      - name: Publish immutable images
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DOCKER_CONFIG: ${{ runner.temp }}/publish-docker-config
+        run: |
+          set -euo pipefail
+          mkdir -p "$DOCKER_CONFIG"
+          trap 'docker logout ghcr.io >/dev/null 2>&1 || true; rm -rf -- "$DOCKER_CONFIG"' EXIT
+          printf '%s' "$GH_TOKEN" | docker login ghcr.io -u "$REGISTRY_OWNER" --password-stdin
+          for component in application web; do
+            image="$IMAGE_PREFIX/unified-$component:$RELEASE_VERSION"
+            if result=$(docker manifest inspect "$image" 2>&1); then
+              echo "Refusing to overwrite existing release: $image" >&2
+              exit 1
+            else
+              case "$result" in
+                *"manifest unknown"*|*"no such manifest"*|*"NAME_UNKNOWN"*) ;;
+                *) echo "Cannot establish that release tag is absent; refusing publication." >&2; exit 1 ;;
+              esac
+            fi
+          done
+          for component in application web; do
+            image="$IMAGE_PREFIX/unified-$component:$RELEASE_VERSION"
+            docker push "$image"
+            docker image inspect "$image" --format '{{json .RepoDigests}}' >> "$GITHUB_STEP_SUMMARY"
+          done

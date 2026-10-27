@@ -1,0 +1,67 @@
+{
+  "id": "npm-packages",
+  "label": "npm 套件／CLI",
+  "version": "1.0.0",
+  "interface_version": 1,
+  "driver": "npm",
+  "category": "package-management",
+  "operations": [
+    "refresh",
+    "install",
+    "upgrade",
+    "uninstall",
+    "doctor"
+  ],
+  "fields": [
+    {
+      "name": "package_name",
+      "label": "npm 套件名稱",
+      "initial": "",
+      "required": true,
+      "choices": []
+    },
+    {
+      "name": "scope",
+      "label": "安裝範圍",
+      "initial": "user",
+      "required": true,
+      "choices": [
+        "user",
+        "project"
+      ]
+    },
+    {
+      "name": "directory",
+      "label": "安裝 prefix／專案絕對目錄",
+      "initial": "",
+      "required": true,
+      "choices": []
+    },
+    {
+      "name": "node",
+      "label": "Node 絕對路徑",
+      "initial": "/usr/bin/node",
+      "required": true,
+      "choices": []
+    },
+    {
+      "name": "npm",
+      "label": "npm CLI JS 絕對路徑",
+      "initial": "/usr/share/nodejs/npm/bin/npm-cli.js",
+      "required": true,
+      "choices": []
+    },
+    {
+      "name": "version",
+      "label": "版本（latest 或完整版本號）",
+      "initial": "latest",
+      "required": true,
+      "choices": []
+    }
+  ],
+  "author": "Unified",
+  "description": "npm 套件／CLI 管理接入；安裝管理插件不會安裝遠端軟體。",
+  "resource_kind": "package",
+  "package_name": "",
+  "hosts": []
+}

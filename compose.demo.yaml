@@ -1,0 +1,9 @@
+services:
+  application:
+    environment:
+      UNIFIED_MODE: demo
+      ADMIN_TOKEN: unified-demo-token-local-only-2026
+    volumes:
+      - demo-data:/data
+volumes:
+  demo-data:
