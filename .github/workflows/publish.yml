@@ -78,7 +78,11 @@ jobs:
             image="$IMAGE_PREFIX/unified-$component:$RELEASE_VERSION"
             docker image save "$image" -o "$RUNNER_TEMP/$component.tar"
             python3 scripts/expand-image-for-audit.py "$RUNNER_TEMP/$component.tar" "$RUNNER_TEMP/$component-layers"
-            "$AUDIT_TOOLS/gitleaks" dir "$RUNNER_TEMP/$component-layers" --config .gitleaks.toml --redact=100 --no-banner
+            report="$RUNNER_TEMP/$component-findings.json"
+            if ! "$AUDIT_TOOLS/gitleaks" dir "$RUNNER_TEMP/$component-layers" --config .gitleaks.toml --redact=100 --no-banner --report-format json --report-path "$report"; then
+              python3 -c 'import json,sys; from pathlib import Path; p=Path(sys.argv[1]); rows=json.loads(p.read_text()) if p.exists() else []; [print(json.dumps({key:row.get(key) for key in ("RuleID","File","StartLine","EndLine")})) for row in rows]' "$report"
+              exit 1
+            fi
             "$AUDIT_TOOLS/trivy" image --quiet --scanners vuln --severity HIGH,CRITICAL --exit-code 1 "$image"
           done
       - name: Publish immutable images
