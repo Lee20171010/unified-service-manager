@@ -1,6 +1,6 @@
 # API · 0.4
 
-Application, Web and Android release 0.4.5 retain API/schema v1. The release adds ready-made service recipes, optional per-instance command overrides and native local diagnostics. Both clients use the same installed plugin descriptors and managed operations.
+Application/Web 0.4.5 and Android 0.4.6 retain API/schema v1. The release adds ready-made service recipes, optional per-instance command overrides and native local diagnostics. Both clients use the same installed plugin descriptors and managed operations.
 
 Web, Android and Application 0.4.0 add plugin document authoring. Existing resource and job APIs remain compatible; schema version stays v1.
 
@@ -53,3 +53,5 @@ Client 0.4.2 changes connection presentation only: server-name entry, server det
 Four service packages v1.1.0 provide Linux/systemd refresh, start, stop, restart, upgrade and doctor operations through existing descriptors. Web and Android use the same operations and fields; optional instance command overrides are under advanced settings and retain their values when collapsed. Nonempty instance commands take precedence over manifest commands; missing newly added settings receive manifest defaults. No new endpoint or schema version is introduced. See [PLUGIN-CATALOG.md](PLUGIN-CATALOG.md) for supported environments, legacy-template preservation and updates through JSON import. Android 0.4.5 carries the new form layout; Application 0.4.5 supplies the override/default semantics.
 
 Legacy service and backup submissions share Application's plugin lifecycle lock with resource submissions. Plugin version/settings binding and durable job insertion form one guarded operation; plugin changes cannot pass their busy-job check concurrently with an older binding being queued.
+
+Android 0.4.6 moves TLS connection disposal off the UI thread. Transient 502 responses continue to use read-only reconnect/poll retry; saved credentials and operation replay policy are unchanged. No server API or image update is required.

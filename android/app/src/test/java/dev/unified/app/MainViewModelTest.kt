@@ -243,6 +243,33 @@ class MainViewModelTest {
         }
 
     @Test
+    fun gateway502DuringUpdateRetriesWithoutDiscardingSavedCredentials() =
+        runTest(dispatcher) {
+            val updating =
+                FakeClient(saved.value.first).apply {
+                    response = { _, _ -> throw ApiException(502, "HTTP 502") }
+                }
+            clients[updating.base] = updating
+            val observing = backgroundScope.launch { vm.observe() }
+            runCurrent()
+            assertTrue(updating.closed)
+            assertFalse(vm.state.value.connected)
+            assertFalse(vm.state.value.needsCredentials)
+            assertFalse(vm.state.value.busy)
+            assertEquals("HTTP 502", vm.state.value.connectionError)
+            assertEquals("https://old.test" to "token", saved.value)
+            val recovered = FakeClient(saved.value.first)
+            clients[recovered.base] = recovered
+            advanceTimeBy(5000)
+            runCurrent()
+            assertTrue(vm.state.value.connected)
+            assertNull(vm.state.value.connectionError)
+            assertEquals(1, recovered.requests)
+            assertEquals("https://old.test" to "token", saved.value)
+            observing.cancel()
+        }
+
+    @Test
     fun backgroundResumeRetainsConsoleAndRefreshesWithoutReplayingWrites() =
         runTest(dispatcher) {
             val client = FakeClient(saved.value.first)

@@ -2,6 +2,7 @@ package dev.unified.app
 
 import java.io.IOException
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -24,14 +25,27 @@ interface ApplicationClient {
     fun close()
 }
 
-class Api(override val base: String, private val token: String) : ApplicationClient {
-    private val http =
+class Api
+internal constructor(
+    override val base: String,
+    private val token: String,
+    private val http: OkHttpClient,
+) : ApplicationClient {
+    constructor(
+        base: String,
+        token: String,
+    ) : this(
+        base,
+        token,
         OkHttpClient.Builder()
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
             .retryOnConnectionFailure(false)
             .followRedirects(false)
-            .build()
+            .build(),
+    )
+
+    private val closed = AtomicBoolean(false)
 
     init {
         val url = base.toHttpUrl()
@@ -48,6 +62,7 @@ class Api(override val base: String, private val token: String) : ApplicationCli
 
     override suspend fun request(path: String, body: JSONObject?): String =
         suspendCancellableCoroutine { continuation ->
+            check(!closed.get()) { "HTTP client is closed" }
             val request =
                 Request.Builder()
                     .url(base.trimEnd('/') + "/api/v1" + path)
@@ -88,8 +103,9 @@ class Api(override val base: String, private val token: String) : ApplicationCli
             )
         }
 
-    override fun terminal(host: String, onOutput: (String) -> Unit): WebSocket =
-        http.newWebSocket(
+    override fun terminal(host: String, onOutput: (String) -> Unit): WebSocket {
+        check(!closed.get()) { "HTTP client is closed" }
+        return http.newWebSocket(
             Request.Builder()
                 .url(
                     base.trimEnd('/').replaceFirst("https://", "wss://") +
@@ -118,9 +134,14 @@ class Api(override val base: String, private val token: String) : ApplicationCli
                 }
             },
         )
+    }
 
     override fun close() {
-        http.dispatcher.cancelAll()
-        http.connectionPool.evictAll()
+        if (!closed.compareAndSet(false, true)) return
+        // TLS close can write close_notify. The transport owns cleanup even after UI cancellation.
+        http.dispatcher.executorService.execute {
+            http.dispatcher.cancelAll()
+            http.connectionPool.evictAll()
+        }
     }
 }

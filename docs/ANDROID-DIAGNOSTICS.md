@@ -27,4 +27,4 @@ An uncaught JVM exception can provide a code stack. Native crashes, ANRs, forced
 
 `Diagnostics.kt` owns fixed event fields, retention, persistence and the crash handler. `UnifiedApplication` initializes it before any Activity; `MainViewModel` records connection phases without passing user input to the logger. `DiagnosticsDialog.kt` previews, clears, shares and saves reports through the Android document picker. Backend/API behavior is unchanged. Use the tests and shared-emulator wrapper workflow in [TESTING.md](TESTING.md).
 
-The user reports connection switching works on 0.4.4 after failing on 0.4.2. The original crash cause is unconfirmed; diagnostic export remains available for future investigation.
+Android 0.4.6 fixes a diagnosed crash when a temporary HTTP error is followed by pooled TLS cleanup on the main thread. A report showed HTTP 502 followed by NetworkOnMainThreadException in ConnectionPool eviction; the endpoint later recovered. Cleanup now runs on the transport executor. This fixes the client crash; a persistent HTTP 502 still requires investigation of the server/proxy. No raw user diagnostic report is stored in the public repository.

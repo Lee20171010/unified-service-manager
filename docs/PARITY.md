@@ -1,6 +1,6 @@
 # Web / native Android parity · 0.4
 
-Application, Web and Android release 0.4.5 retain API/schema v1. The release adds ready-made service recipes, optional per-instance command overrides and native local diagnostics. Both clients use the same installed plugin descriptors and managed operations.
+Application/Web 0.4.5 and Android 0.4.6 retain API/schema v1. The release adds ready-made service recipes, optional per-instance command overrides and native local diagnostics. Both clients use the same installed plugin descriptors and managed operations.
 
 Both clients use the same central API; no commands run on the client. Themes remain local preferences.
 
@@ -41,3 +41,5 @@ Public release 0.4.3 removes private deployment defaults from both clients and e
 ## Plugin defaults · 0.4.5
 
 Four service packages v1.1.0 provide Linux/systemd refresh, start, stop, restart, upgrade and doctor operations through existing descriptors. Web and Android use the same operations and fields; optional instance command overrides are under advanced settings and retain their values when collapsed. Nonempty instance commands take precedence over manifest commands; missing newly added settings receive manifest defaults. No new endpoint or schema version is introduced. See [PLUGIN-CATALOG.md](PLUGIN-CATALOG.md) for supported environments, legacy-template preservation and updates through JSON import. Android 0.4.5 carries the new form layout; Application 0.4.5 supplies the override/default semantics.
+
+Android 0.4.6 fixes main-thread TLS cleanup after temporary connection errors and during disposal. Shared managed operations and Web behavior are unchanged; Android reconnects after a transient 502 without changing saved credentials. Docker images remain 0.4.5.

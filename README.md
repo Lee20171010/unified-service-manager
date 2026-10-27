@@ -1,6 +1,6 @@
 # Unified Service Manager
 
-Manage services, packages and configuration snapshots across multiple hosts from a Web UI or native Android app. Both clients use the same authenticated central application API. Release **0.4.5** includes ready-made service operations, native [local diagnostic export](docs/ANDROID-DIAGNOSTICS.md), and optional per-instance command overrides.
+Manage services, packages and configuration snapshots across multiple hosts from a Web UI or native Android app. Both clients use the same authenticated central application API. Application/Web **0.4.5** provide ready-made service operations and per-instance command overrides. Android **0.4.6** includes [local diagnostic export](docs/ANDROID-DIAGNOSTICS.md) and fixes TLS connection cleanup after temporary server errors. The Android hotfix does not require new Docker images.
 
 ## Deploy with Docker Compose
 
