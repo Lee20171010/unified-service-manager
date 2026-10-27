@@ -18,6 +18,10 @@ with tempfile.TemporaryDirectory(prefix='unified-audit-config-') as directory:
         ('source', 'source.txt', [public_fingerprint], 1),
         ('different-key', 'config-1.json', [different_fingerprint], 1),
         ('mixed-config', 'config-2.json', [public_fingerprint, different_fingerprint], 1),
+        ('legacy-public', 'legacy-config-0.json', [public_fingerprint], 0),
+        ('legacy-different', 'legacy-config-1.json', [different_fingerprint], 1),
+        ('legacy-mixed', 'legacy-config-2.json', [public_fingerprint, different_fingerprint], 1),
+        ('unknown-provenance', 'provenance.json', [public_fingerprint], 1),
     ):
         root = Path(directory) / case
         root.mkdir()

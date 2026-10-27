@@ -34,7 +34,9 @@ Local candidate image IDs reviewed before the registry build:
 
 The publication workflow builds from the exact reviewed commit and adds source/revision/version labels. It repeats the source/history, regression, container, all-layer secret and High/Critical vulnerability gates before pushing. The registry digests in the workflow summary identify those published builds; they differ from local candidates because of release metadata and build timestamps. Version tags are immutable by workflow policy.
 
-`scripts/test-image-audit.py` supplies an OCI archive with a detector fixture present only in its provenance. The gate verifies that the exporter preserves that payload and that Gitleaks detects it. Image export also retains index/manifests, other archive payloads and layer header owner/PAX metadata.
+`scripts/test-image-audit.py` supplies an OCI archive with detector fixtures in provenance and legacy metadata. The gate verifies that the exporter preserves these payloads and that Gitleaks detects the expected findings. Image export also retains index/manifests, other archive payloads and layer header owner/PAX metadata.
+
+Docker's classic image store also emits legacy V1 compatibility configurations. The exporter recognizes them only with valid content-addressed identity and explicit V1 fields, preserves their raw bytes and records original paths. The same exact public-fingerprint exception applies to these configurations. Changed and mixed values, unknown provenance and invalid blob identities remain detectable in regression fixtures. This covers the extra metadata produced by the hosted runner, while keeping the complete archive under inspection.
 
 ## Limits and follow-up
 
