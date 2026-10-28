@@ -85,7 +85,11 @@ internal fun commandPluginDocument(draft: JSONObject): JSONObject {
         .put("description", draft.optString("description").trim())
         .put("interface_version", 1)
         .put("driver", "commands")
-        .put("category", "service-management")
+        .put(
+            "category",
+            if (draft.optString("kind") in listOf("package", "extension")) "package-management"
+            else "service-management",
+        )
         .put("resource_kind", draft.optString("kind", "service"))
         .put("fields", fields)
         .put("commands", commands)
@@ -183,7 +187,8 @@ internal fun PluginDocumentDialog(
         busy = true
         error = null
         try {
-            document = JSONObject(request("/plugins/$pluginId/manifest", null)).toString(2)
+            val source = JSONObject(request("/plugins/$pluginId/manifest", null))
+            document = (if (mode == "copy") copyPluginDocument(source) else source).toString(2)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -192,13 +197,16 @@ internal fun PluginDocumentDialog(
             busy = false
         }
     }
-    LaunchedEffect(pluginId, mode) { if (mode == "export" && document.isEmpty()) loadExport() }
+    LaunchedEffect(pluginId, mode) {
+        if ((mode == "export" || mode == "copy") && document.isEmpty()) loadExport()
+    }
     PluginEditorWindow(
         onDismissRequest = { if (!busy) onDismiss() },
         title = {
             Text(
                 when (mode) {
-                    "create" -> "建立命令插件"
+                    "create" -> "建立插件"
+                    "copy" -> "複製並自訂插件"
                     "export" -> "匯出插件"
                     else -> "匯入插件"
                 }
@@ -216,17 +224,32 @@ internal fun PluginDocumentDialog(
                     SelectionContainer {
                         Text(if (mode == "export") document else preview.orEmpty())
                     }
-                } else if (mode == "import") {
-                    OutlinedButton(
-                        enabled = !busy,
-                        onClick = {
-                            importFile.launch(
-                                arrayOf("application/json", "text/*", "application/octet-stream")
-                            )
-                        },
-                    ) {
-                        Text("選擇 JSON 文件")
+                } else if (mode == "import" || mode == "copy") {
+                    if (mode == "copy") {
+                        Text("請填寫新的 ID；完整設定已保留，可在 JSON 中修改。原插件保留。")
+                        if (document.isEmpty())
+                            TextButton(
+                                enabled = !busy,
+                                onClick = { scope.launch { loadExport() } },
+                            ) {
+                                Text("重新讀取")
+                            }
                     }
+                    if (mode == "import")
+                        OutlinedButton(
+                            enabled = !busy,
+                            onClick = {
+                                importFile.launch(
+                                    arrayOf(
+                                        "application/json",
+                                        "text/*",
+                                        "application/octet-stream",
+                                    )
+                                )
+                            },
+                        ) {
+                            Text("選擇 JSON 文件")
+                        }
                     OutlinedTextField(
                         document,
                         { document = it },
@@ -261,21 +284,35 @@ internal fun PluginDocumentDialog(
                                 if (preview != null) {
                                     request(
                                         "/plugin-documents",
-                                        JSONObject().put("manifest", JSONObject(preview!!)),
+                                        JSONObject()
+                                            .put("manifest", JSONObject(preview!!))
+                                            .put("create_only", mode == "copy"),
                                     )
                                     saved = true
                                 } else {
                                     val manifest =
-                                        if (mode == "create")
-                                            commandPluginDocument(JSONObject(draft))
+                                        if (mode == "create") pluginDocument(JSONObject(draft))
                                         else parsePluginDocument(document)
+                                    if (mode == "copy")
+                                        require(manifest.optString("id") != pluginId) {
+                                            "請使用不同於原插件的新 ID"
+                                        }
                                     val response =
                                         JSONObject(
                                             request(
                                                 "/plugin-documents/validate",
-                                                JSONObject().put("manifest", manifest),
+                                                JSONObject()
+                                                    .put("manifest", manifest)
+                                                    .put("create_only", mode == "copy"),
                                             )
                                         )
+                                    if (mode == "copy")
+                                        require(
+                                            response.isNull("replaces_version") &&
+                                                response.isNull("installed_version")
+                                        ) {
+                                            "此 ID 已存在，請選擇新的 ID"
+                                        }
                                     preview = response.getJSONObject("manifest").toString(2)
                                     note =
                                         "請確認完整參數與命令。" +
@@ -341,7 +378,6 @@ private fun CommandPluginForm(raw: String, enabled: Boolean, update: (String) ->
             "version" to "版本",
             "author" to "作者",
             "description" to "說明",
-            "directory" to "遠端工作目錄",
         )
         .forEach { (key, label) ->
             OutlinedTextField(
@@ -352,13 +388,71 @@ private fun CommandPluginForm(raw: String, enabled: Boolean, update: (String) ->
                 modifier = Modifier.fillMaxWidth(),
             )
         }
-    if (enabled)
+    val kind = values.optString("kind", "service")
+    val driver = values.optString("driver", "commands")
+    if (enabled) {
         Choice(
             "對象類型",
-            values.optString("kind", "service"),
-            listOf("service" to "常駐服務", "tool" to "一次性工具"),
-            { set("kind", it) },
+            kind,
+            listOf(
+                "service" to "常駐服務",
+                "tool" to "一次性工具",
+                "package" to "套件／CLI",
+                "extension" to "擴充插件",
+            ),
+            {
+                val next = JSONObject(raw).put("kind", it)
+                if (
+                    (driver == "compose" && it != "service") ||
+                        (driver == "npm" && it !in listOf("package", "extension"))
+                )
+                    next.put("driver", "commands")
+                update(next.toString())
+            },
         )
+        Choice(
+            "管理方式",
+            driver,
+            listOf("commands" to "自訂命令") +
+                (if (kind == "service") listOf("compose" to "Docker Compose")
+                else if (kind in listOf("package", "extension")) listOf("npm" to "npm")
+                else emptyList()),
+            { set("driver", it) },
+        )
+    }
+    @Composable
+    fun input(key: String, label: String, default: String = "") {
+        OutlinedTextField(
+            values.optString(key, default),
+            { set(key, it) },
+            enabled = enabled,
+            label = { Text(label) },
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
+    if (kind == "extension") input("hosts", "相容的宿主插件 ID（逗號分隔，可留空）")
+    if (driver == "compose") {
+        input("compose_dir", "Compose 專案絕對目錄", "/opt/stacks/example")
+        Text("提供狀態、啟動、停止、重啟及升級。遠端須已有 Compose 專案。")
+        return
+    }
+    if (driver == "npm") {
+        input("package_name", "npm 套件名稱")
+        if (enabled)
+            Choice(
+                "安裝範圍",
+                values.optString("scope", "user"),
+                listOf("user" to "使用者 prefix", "project" to "專案"),
+                { set("scope", it) },
+            )
+        input("npm_directory", "安裝 prefix／專案絕對目錄", "/opt/npm")
+        input("node", "Node 絕對路徑", "/usr/bin/node")
+        input("npm", "npm CLI 絕對路徑", "/usr/share/nodejs/npm/bin/npm-cli.js")
+        input("package_version", "遠端套件版本（latest 或完整版本號）", "latest")
+        Text("提供狀態、安裝、升級、卸載及環境檢查。插件版本與遠端套件版本分開管理。")
+        return
+    }
+    input("directory", "遠端工作目錄", "/opt")
     Text("操作命令：只填需要的操作。狀態命令輸出 active / stopped 或狀態 JSON。遠端程式及腳本須先準備好。")
     pluginCommandActions.forEach { (action, label) ->
         OutlinedTextField(

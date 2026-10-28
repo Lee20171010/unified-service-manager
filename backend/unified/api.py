@@ -118,11 +118,11 @@ def create_app(config=None, registry=None):
 
     @router.post("/plugin-documents/validate")
     def validate_document(body: PluginDocument):
-        return application.plugin_document("validate", body.manifest)
+        return application.plugin_document("validate", body.manifest, create_only=body.create_only)
 
     @router.post("/plugin-documents", status_code=201)
     def import_document(body: PluginDocument):
-        return application.plugin_document("import", body.manifest)
+        return application.plugin_document("import", body.manifest, create_only=body.create_only)
 
     @router.get("/plugins/{id}/manifest")
     def export_document(id: str):

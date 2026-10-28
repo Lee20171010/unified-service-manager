@@ -55,4 +55,54 @@ class PluginCatalogDeviceTest {
         assertEquals(checksum, submitted?.second?.getString("checksum"))
         assertEquals("install", submitted?.second?.getString("action"))
     }
+
+    @Test
+    fun createComposePluginPreviewsAndSavesWithoutActivation() {
+        check(
+            ApplicationProvider.getApplicationContext<Context>().packageName ==
+                "dev.unified.app.acceptance"
+        )
+        val calls = mutableListOf<String>()
+        var submitted: JSONObject? = null
+        compose.setContent {
+            MaterialTheme {
+                PluginDocumentDialog(
+                    "create",
+                    request = { path, body ->
+                        calls += path
+                        submitted = body!!.getJSONObject("manifest")
+                        JSONObject().put("manifest", submitted).toString()
+                    },
+                    onDismiss = {},
+                )
+            }
+        }
+        compose
+            .onNodeWithText("插件 ID（小寫英文、數字、連字號）")
+            .performScrollTo()
+            .performTextInput("personal-stack")
+        compose
+            .onNodeWithText("顯示名稱", substring = false)
+            .performScrollTo()
+            .performTextInput("Stack")
+        compose.onNodeWithText("管理方式：自訂命令").performScrollTo().performClick()
+        compose.onNodeWithText("Docker Compose", substring = false).performClick()
+        compose
+            .onNodeWithText("Compose 專案絕對目錄")
+            .performScrollTo()
+            .performTextReplacement("/opt/fixture")
+        compose.onNodeWithText("校驗與預覽").performClick()
+        compose.waitForIdle()
+        assertEquals(listOf("/plugin-documents/validate"), calls)
+        assertEquals("compose", submitted!!.getString("driver"))
+        assertEquals("personal-stack", submitted!!.getString("id"))
+        assertEquals(
+            "/opt/fixture",
+            submitted!!.getJSONArray("fields").getJSONObject(0).getString("initial"),
+        )
+        compose.onNodeWithText("儲存到可安裝").performClick()
+        compose.waitForIdle()
+        assertEquals(listOf("/plugin-documents/validate", "/plugin-documents"), calls)
+        compose.onNodeWithText("已儲存到可安裝。請關閉此視窗，再按 Install／更新插件。").assertExists()
+    }
 }

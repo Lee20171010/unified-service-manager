@@ -1,6 +1,6 @@
 # Unified Service Manager
 
-Manage services, packages and configuration snapshots across multiple hosts from a Web UI or native Android app. Both clients use the same authenticated central application API. Release **0.5.0** separates generic built-in plugins from the official GitHub catalog. Both clients can check available versions and explicitly install or update verified local copies. Custom definitions and installed versions persist across image updates. Android **0.5.1** adds adaptive navigation and list/detail layouts for phones, unfolded devices and tablets; it uses the same 0.5.0 server API.
+Manage services, packages and configuration snapshots across multiple hosts from a Web UI or native Android app. Both clients use the same authenticated central application API. Release **0.6.0** adds personal Compose, npm and command plugin builders plus full-manifest copying in both clients. Generic builtins, verified GitHub packages and custom definitions share explicit installation and update controls. Android adapts navigation and list/detail layouts to phones, unfolded devices and tablets.
 
 ## Deploy with Docker Compose
 
@@ -9,7 +9,7 @@ Images are published under:
 - `ghcr.io/lee20171010/unified-application:latest`
 - `ghcr.io/lee20171010/unified-web:latest`
 
-`latest` tracks the most recent reviewed stable release. Set `IMAGE_TAG=0.5.0` to pin this release. Pulling downloads images; Up recreates containers when needed. Official metadata refreshes at startup and every six hours, with a manual check in both clients. Install/Update downloads the selected package; installed execution content changes only on explicit approval. See [the catalog guide](docs/PLUGIN-CATALOG.md).
+`latest` tracks the most recent reviewed stable release. Set `IMAGE_TAG=0.6.0` to pin this release. Pulling downloads images; Up recreates containers when needed. Official metadata refreshes at startup and every six hours, with a manual check in both clients. Install/Update downloads the selected package; installed execution content changes only on explicit approval. See [the catalog guide](docs/PLUGIN-CATALOG.md).
 
 Use [deploy/omv/compose.yaml](deploy/omv/compose.yaml) with [env.example](deploy/omv/env.example). This configuration also works with ordinary Docker Compose. Set a unique `ADMIN_TOKEN` of at least 32 characters, then run:
 
@@ -27,7 +27,7 @@ The Web port binds to `127.0.0.1:4180` by default. Put it behind your HTTPS reve
 ## Capabilities
 
 - Multi-host inventory, observed status and dynamic resource registration.
-- Explicit plugin install/update/rollback; creating and importing JSON command plugins from either client.
+- Explicit plugin install/update/rollback; create Compose, npm and command plugins, or copy existing integrations from either client.
 - Service upgrade, start, stop, restart and status; reusable command and npm package integrations.
 - Durable background jobs, stdout/stderr, full logs and interactive diagnostic input.
 - Independent authenticated SSH sessions with a line-oriented terminal.

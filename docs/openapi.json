@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Unified Application Layer",
-    "version": "0.5.0"
+    "version": "0.6.0"
   },
   "paths": {
     "/healthz": {
@@ -1126,6 +1126,11 @@
       },
       "PluginDocument": {
         "properties": {
+          "create_only": {
+            "type": "boolean",
+            "title": "Create Only",
+            "default": false
+          },
           "manifest": {
             "additionalProperties": true,
             "type": "object",

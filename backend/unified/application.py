@@ -12,6 +12,7 @@ from . import ssh
 from contextlib import suppress
 from .store import Store, Conflict, identifier, now
 from .backups import BackupService, DemoBackups
+from .adapters.compose import ComposeAdapter
 from .adapters import builtins
 from .adapters.contracts import JobContext, AdapterError
 
@@ -139,7 +140,7 @@ class Application:
         for m in self.plugins.active():
             driver = m["driver"]
             if driver == "compose":
-                services.append(base.service("compose"))
+                services.append(type(base.service("compose"))(self.config, m))
             elif driver in ("commands", "npm"):
                 services.append(ResourceAdapter(self.config, m, self.sessions))
             elif driver == "backup" and m["id"] in base.applications:
@@ -162,7 +163,7 @@ class Application:
             self.backups.registry = self.registry
             return result
 
-    def plugin_document(self, action, document=None, id=None):
+    def plugin_document(self, action, document=None, id=None, create_only=False):
         if action == "export":
             if not self.plugins:
                 raise ValueError("Custom registry has no plugin catalog")
@@ -175,9 +176,9 @@ class Application:
             if not self.plugins:
                 raise ValueError("Custom registry has no plugin catalog")
             if action == "validate":
-                return self.plugins.preview_document(document)
+                return self.plugins.preview_document(document, create_only=create_only)
             if action == "import":
-                return self.plugins.import_document(document)
+                return self.plugins.import_document(document, create_only=create_only)
             raise ValueError("Invalid document action")
 
     def snapshot(self):
@@ -580,7 +581,7 @@ class Application:
                                 raise ValueError("HOST_REFERENCE: 仍有宿主引用")
                             if (
                                 self.config.mode != "demo"
-                                and service["adapter"] == "compose"
+                                and isinstance(adapter, ComposeAdapter)
                             ):
                                 await self.sessions.execute(
                                     context,

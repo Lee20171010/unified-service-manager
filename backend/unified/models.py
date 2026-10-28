@@ -108,4 +108,5 @@ class SessionInput(Input):
 
 
 class PluginDocument(Input):
+    create_only: bool = Field(default=False, strict=True)
     manifest: dict

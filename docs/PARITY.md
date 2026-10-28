@@ -1,6 +1,6 @@
 # Web / native Android parity · 0.4
 
-Application/Web/Android 0.5.0 retain API/schema v1. The release adds central GitHub catalog refresh and verified package downloads alongside generic builtins and persistent custom definitions. Both clients use the same installed plugin descriptors and managed operations.
+Application/Web/Android 0.6.0 retain API/schema v1. Both clients create Compose/npm/command plugins and copy existing manifests, alongside central GitHub catalog refresh, verified downloads and persistent custom definitions. Both clients use the same installed plugin descriptors and managed operations.
 
 Both clients use the same central API; no commands run on the client. Themes remain local preferences.
 
@@ -12,7 +12,8 @@ The 2026-10-27 npm 12 resolution fix applies centrally to both clients. No clien
 |---|---|---|---|
 | Hosts, service/package/extension/tool overview and filters | Yes | Yes | snapshot/resources |
 | Catalog category/install-state filters | Yes | Yes | plugin catalog |
-| Create command plugin with operations and custom parameters | Yes | Yes | interface v1 validation |
+| Create service/package/extension/tool plugin; Compose/npm/custom commands | Yes | Yes | interface v1 validation |
+| Copy existing Compose/npm/command plugin to a new ID with full JSON editing | Yes | Yes | manifest export, preview and import |
 | Import JSON file / paste, preview, save to available catalog | Yes | Yes | atomic persistent document import |
 | Export available plugin JSON | Download | Android document picker | clean manifest export |
 | Install/update/enable/disable/remove/rollback plugins | Yes | Yes | plugin lifecycle |
@@ -51,3 +52,7 @@ Both clients display builtin/GitHub/custom/installed provenance, latest availabl
 ## Android foldable layout · 0.5.1
 
 Android adapts bottom navigation/rail and host/resource list-detail panes to window size. Both clients retain the same actions, validation and central execution. Android preserves navigation through resizing and keeps connection/form/console drafts in ViewModel-owned memory through Activity recreation. Process death discards those drafts; it does not replay an action. Application/Web remain 0.5.0 and API/schema v1; no Compose or environment changes are needed.
+
+## Personal plugin authoring · 0.6.0
+
+Both clients offer equivalent resource-kind and management-method choices, npm scope/runtime/version fields, extension host IDs and full-manifest copying. Save only updates the available catalog; explicit Install activates capabilities. Compose IDs are independent, with shared host/directory locks. Backup application/storage packages retain their dedicated interfaces.

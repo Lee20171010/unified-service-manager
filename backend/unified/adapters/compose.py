@@ -18,11 +18,23 @@ class ComposeAdapter:
         (ConfigField("compose_dir", "Compose 專案目錄", "/opt/stacks/"),),
     )
 
-    def __init__(self, config):
+    def __init__(self, config, manifest=None):
         self.config = config
+        if manifest is not None:
+            self.descriptor = Descriptor(
+                manifest["id"], "service", manifest["label"],
+                tuple(manifest["operations"]),
+                tuple(ConfigField(**f) for f in manifest["fields"]),
+                version=manifest["version"],
+            )
 
     def validate(self, settings):
-        return ComposeSettings.model_validate(settings).model_dump()
+        values = {f.name: f.initial for f in self.descriptor.fields} | settings
+        result = ComposeSettings.model_validate(values).model_dump()
+        field = self.descriptor.fields[0]
+        if field.choices and result["compose_dir"] not in field.choices:
+            raise ValueError("Invalid Compose directory choice")
+        return result
 
     def identity(self, settings):
         return settings["compose_dir"]

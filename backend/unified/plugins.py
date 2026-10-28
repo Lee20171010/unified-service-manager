@@ -110,8 +110,7 @@ def validate_manifest(m):
     if not m.get("label") or len(m["label"]) > 100:
         raise ValueError("PLUGIN_MANIFEST: invalid label")
     if (
-        (m["driver"] == "compose" and m["id"] != "compose")
-        or (m["driver"] == "backup" and m["id"] not in ("magpie", "serverbox"))
+        (m["driver"] == "backup" and m["id"] not in ("magpie", "serverbox"))
         or (m["driver"] == "webdav" and m["id"] != "webdav")
     ):
         raise ValueError("PLUGIN_MANIFEST: primitive identity mismatch")
@@ -147,6 +146,14 @@ def validate_manifest(m):
         not m.get("operations") or not set(m["operations"]) <= ACTIONS
     ):
         raise ValueError("PLUGIN_MANIFEST: invalid operations")
+    if m["driver"] == "compose":
+        if (
+            m.get("resource_kind", "service") != "service"
+            or m["category"] != "service-management"
+            or not set(m["operations"]) <= {"refresh", "start", "stop", "restart", "upgrade"}
+            or [f["name"] for f in fields] != ["compose_dir"]
+        ):
+            raise ValueError("PLUGIN_MANIFEST: invalid Compose contract")
     if m["driver"] == "commands":
         for a, command in m.get("commands", {}).items():
             if (
@@ -230,8 +237,14 @@ class Plugins:
                                           "error": "Uploaded plugin document is invalid", "available": False}
         return found
 
-    def preview_document(self, m):
+    def preview_document(self, m, create_only=False):
         validate_manifest(m)
+        if create_only and (
+            m["id"] in self.discover()
+            or m["id"] in self.remote.available()
+            or m["id"] in self.installed()
+        ):
+            raise ValueError("PLUGIN_EXISTS: 此 ID 已存在，請選擇新的 ID")
         raw = manifest_bytes(m)
         previous = self.discover().get(m["id"])
         if previous and not previous.get("error") and previous["version"] == m["version"] and manifest_bytes(previous) != raw:
@@ -242,8 +255,8 @@ class Plugins:
         return {"manifest": m, "replaces_version": previous.get("version") if previous else None,
                 "installed_version": self.installed().get(m["id"], {}).get("version")}
 
-    def import_document(self, m):
-        preview = self.preview_document(m)
+    def import_document(self, m, create_only=False):
+        preview = self.preview_document(m, create_only=create_only)
         folder = self.catalog_root / m["id"]
         folder.mkdir(parents=True, exist_ok=True)
         fd, name = tempfile.mkstemp(prefix=".import-", dir=folder)

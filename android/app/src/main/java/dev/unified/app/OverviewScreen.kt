@@ -774,7 +774,7 @@ internal fun UnifiedScreen(
                                                 enabled = !state.busy,
                                                 onClick = { pluginEditor = "create" },
                                             ) {
-                                                Text("建立命令插件")
+                                                Text("建立插件")
                                             }
                                             OutlinedButton(
                                                 enabled = !state.busy,
@@ -862,6 +862,23 @@ internal fun UnifiedScreen(
                                                     },
                                                 ) {
                                                     Text("匯出 JSON")
+                                                }
+                                            if (
+                                                p.available &&
+                                                    p.category in
+                                                        listOf(
+                                                            "service-management",
+                                                            "package-management",
+                                                        )
+                                            )
+                                                OutlinedButton(
+                                                    enabled = !state.busy,
+                                                    onClick = {
+                                                        exportPluginId = p.id
+                                                        pluginEditor = "copy"
+                                                    },
+                                                ) {
+                                                    Text("複製並自訂")
                                                 }
                                             actions.forEach { (action, label) ->
                                                 OutlinedButton(

@@ -1,6 +1,6 @@
 # API · 0.4
 
-Application/Web/Android 0.5.0 retain API/schema v1. The release adds central GitHub catalog refresh and verified package downloads alongside generic builtins and persistent custom definitions. Both clients use the same installed plugin descriptors and managed operations.
+Application/Web/Android 0.6.0 retain API/schema v1. Both clients create Compose/npm/command plugins and copy existing manifests, alongside central GitHub catalog refresh, verified downloads and persistent custom definitions. Both clients use the same installed plugin descriptors and managed operations.
 
 Web, Android and Application 0.4.0 add plugin document authoring. Existing resource and job APIs remain compatible; schema version stays v1.
 
@@ -14,7 +14,7 @@ npm version resolution accepts a scalar or single-element JSON array from the re
 |---|---|
 | GET `/snapshot` | hosts, service-only `services`, all `resources`, plugin catalog/install state, active adapters, backups, jobs |
 | GET `/plugins` | catalog metadata plus `installed` record or null |
-| POST `/plugin-documents/validate` | `{manifest: object}` → `{manifest,replaces_version,installed_version}`; validates without writes |
+| POST `/plugin-documents/validate` | `{manifest: object, create_only?: boolean}` → `{manifest,replaces_version,installed_version}`; validates without writes |
 | POST `/plugin-documents` | same body, 201; revalidates and atomically saves to available catalog, without installation |
 | GET `/plugins/{id}/manifest` | clean available manifest JSON with download filename; installed copy only when catalog source is absent |
 | POST `/plugins/{id}` | `{action: install/update/enable/disable/remove/rollback}` |
@@ -65,3 +65,7 @@ POST /plugin-catalog/refresh (authenticated) refreshes metadata only and returns
 ## Android adaptive UI · 0.5.1
 
 The adaptive native layout uses existing API v1 endpoints. Window resizing and Activity recreation do not submit mutations, open SSH sessions or resend input. Draft retention is client memory only; no additional server persistence or endpoint is introduced.
+
+## Personal plugin authoring · 0.6.0
+
+API/schema remain v1. Compose manifests may use independent IDs with resource_kind=service, category=service-management, one compose_dir field, and a nonempty subset of refresh/start/stop/restart/upgrade. Active descriptors honor manifest identity, version, fields and operations. Settings use the declared directory default and existing absolute-path validation. Jobs for the same host/directory share installation locks across plugin IDs. New builders and full-document copies use existing export/validate/import endpoints. Copy clients send create_only=true in both document requests. Application rejects IDs present in local, GitHub or installed catalogs and repeats this check under its lifecycle guard on save. Imports default create_only=false and retain the explicit preview-and-replace contract. No endpoint activates plugins during authoring.
