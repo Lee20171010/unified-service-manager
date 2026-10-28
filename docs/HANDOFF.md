@@ -4,7 +4,7 @@ Read `README.md`, `RUNTIME-0.3.md`, `ARCHITECTURE.md`, `API.md`, `PARITY.md`, an
 
 ## Current implementation
 
-Application/Web/Android are 0.5.0 (native versionCode 15). The selected circular-node U brand is retained. Docker releases are `ghcr.io/lee20171010/unified-application:0.5.0` and `ghcr.io/lee20171010/unified-web:0.5.0`; numeric tags are immutable and latest tracks the reviewed stable release. Packaging exports already built releases. OMV Compose contains only application and web with relative data/ssh/sources mounts.
+Application/Web are 0.5.0; Android is 0.5.1 (versionCode 16). The selected circular-node U brand is retained. Docker releases are `ghcr.io/lee20171010/unified-application:0.5.0` and `ghcr.io/lee20171010/unified-web:0.5.0`; numeric tags are immutable and latest tracks the reviewed stable release. Packaging exports already built releases. OMV Compose contains only application and web with relative data/ssh/sources mounts.
 
 `backend/docker-entrypoint.sh` starts with root to prepare empty root-owned DATA_DIR/SOURCE_DIR directories through storage_init, then execs the server via the Alpine setpriv package as 10001:10001 with no supplementary groups, zero capability sets and no-new-privileges. SSH remains read-only and its files/permissions are untouched. Docker's default startup capabilities are required; an explicit non-root Docker user skips initialization and needs prepared writable mounts. docker exec defaults to the image's root user; actual server identity must be checked on the running process. See OMV-COMPOSE.md and RELEASE-REVIEW-0.4.3.md. Existing operators should retain their previous images and matching Compose for rollback. Existing deployments retain their mount paths and project identity. Plugin authoring requires Application 0.4.0 or newer; supported plugin changes need no rebuild.
 
@@ -75,3 +75,11 @@ ApiCloseTest uses real loopback HTTPS and records socket-close threads for 502 a
 Read PLUGIN-CATALOG.md for the current source and migration contract. plugin_catalog.py fetches only the fixed official GitHub origin; no administrator credentials are forwarded. A single lifecycle-owned metadata task starts after the worker lock and refreshes every six hours, with shutdown waiting for bounded in-flight work. Both clients can refresh explicitly. The validated metadata cache is atomic and survives refresh failure; package bytes are fetched on explicit actions and pinned by SHA-256. Installed packages remain the registry authority.
 
 plugins/ holds authoring sources, catalog/index.json and catalog/packages hold published metadata/content-addressed packages, and the image copies only Compose/npm/WebDAV into /builtin-plugins. factory-plugin-hashes.json identifies exact historical shipped definitions in old volumes; modified legacy definitions copy into /data/plugins/catalog without overriding UI imports. Legacy volume originals remain for rollback. New package versions require regenerated catalog files, review and GitHub publication, not an Application image rebuild. Keep old published package files immutable.
+
+## Android adaptive layout · 0.5.1
+
+AdaptiveWorkspace uses Navigation 3 ListDetailSceneStrategy and the actual available width for host/resource details. NavigationSuiteScaffold chooses bar/rail. Selected IDs, page, filters and scroll state remain saveable. MainViewModel owns WorkspaceDrafts for form/connection/console inputs through configuration changes, without saving those drafts to disk. Successful workspace changes clear them. Closing an action form preserves the selected detail behind it. See ARCHITECTURE.md and TESTING.md for thresholds, ownership and acceptance boundaries.
+
+Build with AGP 9.1.1 (built-in Kotlin), Kotlin Compose plugin 2.2.10, Gradle 9.3.1, JDK 17/21 and Android SDK 37.0. Adaptive 1.3.0 and Navigation 3 1.2.0 require this compile toolchain; minSdk 26 and targetSdk 35 are unchanged. Server/Web images and OMV Compose remain at 0.5.0.
+
+Validation and native-only publication boundaries are in [RELEASE-REVIEW-ANDROID-0.5.1.md](RELEASE-REVIEW-ANDROID-0.5.1.md).

@@ -29,7 +29,15 @@ internal data class FormSpec(
     val note: String = "",
     val confirm: Boolean = false,
     val adapters: List<ServiceAdapterInfo> = emptyList(),
-)
+) {
+    val values =
+        mutableStateMapOf<String, String>().apply {
+            fields.forEach { put(it.name, it.initial) }
+            adapters.firstOrNull()?.fields?.forEach { put("settings." + it.name, it.initial) }
+        }
+    var confirmed by mutableStateOf(false)
+    var advanced by mutableStateOf(false)
+}
 
 internal fun serverName(base: String): String {
     val host =
@@ -54,10 +62,11 @@ internal fun ConnectionDialog(
     onConnect: (String, String) -> Unit,
     connected: Boolean = false,
     onDiagnostics: () -> Unit = {},
+    draft: ConnectionDraft = remember { ConnectionDraft(connection, connected) },
 ) {
-    var editing by remember { mutableStateOf(!connected) }
-    var base by remember { mutableStateOf(connection.first) }
-    var token by remember { mutableStateOf(connection.second) }
+    var editing by draft::editing
+    var base by draft::base
+    var token by draft::token
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(if (editing) "連接伺服器" else "伺服器") },
@@ -112,15 +121,7 @@ internal fun FormDialog(
     dismiss: () -> Unit,
     submit: (JSONObject) -> Unit,
 ) {
-    val values =
-        remember(spec) {
-            mutableStateMapOf<String, String>().apply {
-                spec.fields.forEach { put(it.name, it.initial) }
-                spec.adapters.firstOrNull()?.fields?.forEach {
-                    put("settings." + it.name, it.initial)
-                }
-            }
-        }
+    val values = spec.values
     val fields =
         spec.fields +
             spec.adapters
@@ -136,8 +137,8 @@ internal fun FormDialog(
                         required = it.required,
                     )
                 }
-    var confirmed by remember { mutableStateOf(false) }
-    var advanced by remember(spec) { mutableStateOf(false) }
+    var confirmed by spec::confirmed
+    var advanced by spec::advanced
     fun isOverride(field: FormField) =
         !field.required &&
             field.name.removePrefix("settings.") in serviceVocabulary.map { "cmd_$it" }

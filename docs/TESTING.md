@@ -18,7 +18,7 @@ Tests create temporary databases, keys and application files. No production cred
 
 ## Native Android
 
-JDK 17/21 and Android SDK 35 are required. The first run downloads test libraries and Android runtime jars from their package repositories.
+JDK 17/21 and Android SDK 37.0 are required. The first run downloads test libraries and Android runtime jars from their package repositories.
 
 ```bash
 android/gradlew -p android :app:testDebugUnitTest --max-workers=1
@@ -109,3 +109,11 @@ Run `scripts/test.sh` and the full Android assemble/unit-test commands after run
 scripts/build-github-catalog.py --check verifies generated metadata and immutable package artifacts. test_github_catalog.py uses local fixture bytes and controlled HTTP transports: generic-only fresh instances, no activation on metadata refresh, pinned installs, tamper/oversize/redirect/path rejection, offline restart, custom precedence, idempotent migration, unreadable legacy sources, concurrent download/lifecycle changes, and worker shutdown independent of slow metadata. Existing submission/update locking regressions remain required. All package tests use fixture transports; no managed service executes.
 
 PluginCatalogScreenTest exercises native catalog error/source display, manual refresh and version/checksum-pinned install through Compose semantics. web-plugin-catalog.test.cjs verifies actual catalog rendering and matching request bodies. These checks are separate from emulator and real-deployment acceptance.
+
+## Adaptive Android layouts · 0.5.1
+
+`AdaptiveWorkspaceTest` changes the fixture window between narrow and wide sizes, restores saveable state, verifies list/detail visibility and checks that resizing does not submit requests. Retained form tests check draft values across composition restoration; MainViewModelTest checks that failed connection attempts preserve drafts and accepted workspace changes clear them. `AdaptiveDeviceTest` recreates the actual MainActivity on the isolated emulator package and verifies unsaved connection edits remain without saving credentials or connecting.
+
+`AdaptiveScreenshotTest` uses Robolectric native graphics and fixed example data to produce review captures for phone, unfolded light/dark, tablet landscape and closed-detail layouts. Images are written under `android/app/build/reports/adaptive-screenshots/`; this is a visual review artifact, not an approved golden-image comparison. No reference image is overwritten. These tests use simulated viewport sizes, not a physical hinge or device-model certification. Check physical fold/unfold, split-window, font scaling and the on-screen keyboard on the target handset before considering device acceptance complete.
+
+The build requires Android SDK platform 37.0 and build tools 36.0.0. The Gradle wrapper checksum is pinned. API 28 legacy tests and API 35 adaptive tests remain distinct from the configured Android 16 device run.

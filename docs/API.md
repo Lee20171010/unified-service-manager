@@ -61,3 +61,7 @@ Android 0.4.6 moves TLS connection disposal off the UI thread. Transient 502 res
 GET /snapshot adds plugin_catalog {checked (Unix milliseconds or null), error, refreshing, count, source}. Plugin entries add source (builtin/github/custom/installed) and artifact_checksum for GitHub packages. Existing fields and API/schema v1 are preserved.
 
 POST /plugin-catalog/refresh (authenticated) refreshes metadata only and returns catalog status. Network/validation failure returns status with error and preserves the prior cache. POST /plugins/{id} accepts optional version and checksum alongside action for install/update; mismatches return 422 PLUGIN_CHANGED. Both current clients submit the displayed identity. GitHub manifests download on explicit install/update or export, with fixed-origin HTTPS, size limits, content checksum and metadata checks. Downloads do not queue host operations. Busy-job locking, custom precedence, immutable installations and rollback are preserved. Older clients remain compatible; no installed plugin is automatically upgraded.
+
+## Android adaptive UI · 0.5.1
+
+The adaptive native layout uses existing API v1 endpoints. Window resizing and Activity recreation do not submit mutations, open SSH sessions or resend input. Draft retention is client memory only; no additional server persistence or endpoint is introduced.

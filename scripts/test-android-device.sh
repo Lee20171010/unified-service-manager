@@ -51,7 +51,7 @@ adb install "$test_app"
 adb shell getprop ro.build.version.sdk > "$report/api-level.txt"
 adb shell wm size > "$report/display.txt"
 adb shell wm density >> "$report/display.txt"
-adb shell am instrument -w -r -e class dev.unified.app.ConnectionDeviceTest,dev.unified.app.HttpsRecoveryDeviceTest,dev.unified.app.PluginCatalogDeviceTest \
+adb shell am instrument -w -r -e class dev.unified.app.ConnectionDeviceTest,dev.unified.app.HttpsRecoveryDeviceTest,dev.unified.app.PluginCatalogDeviceTest,dev.unified.app.AdaptiveDeviceTest \
   "$package.test/androidx.test.runner.AndroidJUnitRunner" | tee "$report/instrumentation.txt"
 grep -Eq 'OK \([0-9]+ tests?\)' "$report/instrumentation.txt"
 # Exercise the installed crash handler through Android, then start a fresh process to export.

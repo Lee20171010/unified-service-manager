@@ -60,6 +60,28 @@ class MainViewModelTest {
     }
 
     @Test
+    fun workspaceDraftsClearOnlyAfterAcceptedSwitch() =
+        runTest(dispatcher) {
+            connect(FakeClient("https://old.test"))
+            val draft = FormSpec("Fixture", "/hosts", listOf(FormField("name", "Name")))
+            draft.values["name"] = "unsaved fixture"
+            vm.drafts.form.value = draft
+            vm.drafts.jobInput.value = "unsent fixture"
+            val broken =
+                FakeClient("https://broken.test").apply {
+                    response = { _, _ -> throw IOException("offline") }
+                }
+            clients[broken.base] = broken
+            vm.connect(broken.base, "fixture")
+            runCurrent()
+            assertSame(draft, vm.drafts.form.value)
+            assertEquals("unsent fixture", vm.drafts.jobInput.value)
+            connect(FakeClient("https://new.test"))
+            assertNull(vm.drafts.form.value)
+            assertEquals("", vm.drafts.jobInput.value)
+        }
+
+    @Test
     fun failedConnectionClosesCandidateAndPreservesWorkspace() =
         runTest(dispatcher) {
             val old = FakeClient("https://old.test")

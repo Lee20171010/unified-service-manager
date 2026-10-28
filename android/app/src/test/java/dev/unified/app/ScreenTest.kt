@@ -85,7 +85,7 @@ class ScreenTest {
         assertEquals("/resources/s1/jobs", submitted?.first)
         assertEquals("restart", submitted?.second?.getString("action"))
         assertNull(terminalHost)
-        compose.onNodeWithText("受管對象詳情與操作 →").performScrollTo().performClick()
+        compose.onNodeWithText("受管對象詳情").assertIsDisplayed()
         compose.onNodeWithText("開啟 SSH Terminal").performScrollTo().performClick()
         assertEquals("h1", terminalHost)
     }

@@ -92,6 +92,7 @@ internal fun AppRoute(vm: MainViewModel, themeMode: ThemeMode, onThemeChange: (T
             onThemeChange,
             vm::pluginDocument,
             onDiagnostics = { diagnosticsOpen = true },
+            drafts = vm.drafts,
         )
     }
     state.job?.let { job ->
@@ -103,9 +104,16 @@ internal fun AppRoute(vm: MainViewModel, themeMode: ThemeMode, onThemeChange: (T
             state.session,
             state.inputBusy,
             { text, close -> vm.jobInput(text, close) },
+            draft = vm.drafts.jobInput,
         )
     }
     state.terminalHost?.let { host ->
-        TerminalDialog(host, state.terminalOutput, vm::terminalInput, vm::closeTerminal)
+        TerminalDialog(
+            host,
+            state.terminalOutput,
+            vm::terminalInput,
+            vm::closeTerminal,
+            vm.drafts.terminalInput,
+        )
     }
 }

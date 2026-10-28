@@ -1,6 +1,6 @@
 # Unified Service Manager
 
-Manage services, packages and configuration snapshots across multiple hosts from a Web UI or native Android app. Both clients use the same authenticated central application API. Release **0.5.0** separates generic built-in plugins from the official GitHub catalog. Both clients can check available versions and explicitly install or update verified local copies. Custom definitions and installed versions persist across image updates.
+Manage services, packages and configuration snapshots across multiple hosts from a Web UI or native Android app. Both clients use the same authenticated central application API. Release **0.5.0** separates generic built-in plugins from the official GitHub catalog. Both clients can check available versions and explicitly install or update verified local copies. Custom definitions and installed versions persist across image updates. Android **0.5.1** adds adaptive navigation and list/detail layouts for phones, unfolded devices and tablets; it uses the same 0.5.0 server API.
 
 ## Deploy with Docker Compose
 
@@ -50,7 +50,7 @@ bash scripts/test.sh
 android/gradlew -p android :app:assembleDebug :app:testDebugUnitTest --max-workers=2
 ```
 
-Android requires JDK 17/21 and Android SDK 35. Build outputs, local credentials, deployment records and screenshots are excluded from Git. The accepted mock prototype is retained under `prototype/`; production source is `web/`.
+Android requires JDK 17/21 and Android SDK 37.0. Build outputs, local credentials, deployment records and screenshots are excluded from Git. The accepted mock prototype is retained under `prototype/`; production source is `web/`.
 
 ## Project guide
 

@@ -33,8 +33,9 @@ internal fun JobConsole(
     session: JobSession = JobSession(),
     inputBusy: Boolean = false,
     sendInput: (String, Boolean) -> Unit = { _, _ -> },
+    draft: MutableState<String> = remember(job.id) { mutableStateOf("") },
 ) {
-    var jobInput by remember(job.id) { mutableStateOf("") }
+    var jobInput by draft
     var stream by rememberSaveable { mutableStateOf("all") }
     var exportError by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
@@ -63,7 +64,10 @@ internal fun JobConsole(
             Modifier.fillMaxWidth().fillMaxHeight(.92f).padding(12.dp),
             shape = MaterialTheme.shapes.large,
         ) {
-            Column(Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(
+                Modifier.padding(18.dp).imePadding(),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
                 Row {
                     Text(
                         "Job Console",
@@ -165,8 +169,9 @@ internal fun TerminalDialog(
     output: String,
     input: (String) -> Unit,
     close: () -> Unit,
+    draft: MutableState<String> = remember(host) { mutableStateOf("") },
 ) {
-    var command by rememberSaveable { mutableStateOf("") }
+    var command by draft
     Dialog(close, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Surface(
             Modifier.fillMaxWidth().fillMaxHeight(.92f).padding(12.dp),

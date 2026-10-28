@@ -47,3 +47,7 @@ Android 0.4.6 fixes main-thread TLS cleanup after temporary connection errors an
 ## GitHub catalog · 0.5.0
 
 Both clients display builtin/GitHub/custom/installed provenance, latest available and installed versions, cached catalog state and refresh errors. Both provide Check plugin updates through the authenticated central endpoint, and pin displayed version/checksum on Install/Update. Application alone downloads and validates packages. User imports override official entries; installed versions continue offline. Metadata refresh does not activate or execute plugins. API/schema remain v1.
+
+## Android foldable layout · 0.5.1
+
+Android adapts bottom navigation/rail and host/resource list-detail panes to window size. Both clients retain the same actions, validation and central execution. Android preserves navigation through resizing and keeps connection/form/console drafts in ViewModel-owned memory through Activity recreation. Process death discards those drafts; it does not replay an action. Application/Web remain 0.5.0 and API/schema v1; no Compose or environment changes are needed.

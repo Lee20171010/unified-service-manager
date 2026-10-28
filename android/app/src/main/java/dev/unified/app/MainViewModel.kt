@@ -35,6 +35,8 @@ class MainViewModel(
     private val credentials: ConnectionStore,
     private val clientFactory: (String, String) -> ApplicationClient = ::Api,
 ) : ViewModel() {
+    internal val drafts = WorkspaceDrafts()
+
     var connection = credentials.read()
         private set
 
@@ -82,6 +84,7 @@ class MainViewModel(
             closeTerminal()
             api?.close()
             api = next
+            if (!sameWorkspace && !automatic) drafts.clear()
             connection = next.base to token.trim()
             mutable.update {
                 val current =
@@ -215,11 +218,13 @@ class MainViewModel(
     }
 
     fun showJob(job: Job) {
+        drafts.jobInput.value = ""
         jobGeneration++
         mutable.update { it.copy(job = job, logs = emptyList(), session = JobSession()) }
     }
 
     fun closeJob() {
+        drafts.jobInput.value = ""
         jobGeneration++
         mutable.update { it.copy(job = null, logs = emptyList(), session = JobSession()) }
     }
@@ -280,6 +285,7 @@ class MainViewModel(
     }
 
     fun closeTerminal() {
+        drafts.terminalInput.value = ""
         terminalGeneration.incrementAndGet()
         socket?.close(1000, "Closed by user")
         socket = null
@@ -287,6 +293,7 @@ class MainViewModel(
     }
 
     override fun onCleared() {
+        drafts.clear()
         socket?.cancel()
         api?.close()
     }
