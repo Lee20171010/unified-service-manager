@@ -62,6 +62,7 @@ data class Snapshot(
     val serviceAdapters: List<ServiceAdapterInfo> = emptyList(),
     val backupApplications: List<BackupApplicationInfo> = emptyList(),
     val plugins: List<PluginInfo> = emptyList(),
+    val pluginCatalog: CatalogStatus = CatalogStatus(),
 )
 
 data class AdapterField(
@@ -226,11 +227,26 @@ internal fun parseSnapshot(text: String): Snapshot {
                     installed?.has("previous") == true,
                     p.optBoolean("available", true),
                     p.stringList("hosts"),
+                    p.optString("source", "custom"),
+                    p.optString("artifact_checksum"),
                 )
             }
             .orEmpty(),
+        j.optJSONObject("plugin_catalog")?.let {
+            CatalogStatus(
+                it.optLong("checked"),
+                it.optString("error").takeUnless { e -> e == "null" }.orEmpty(),
+                it.optBoolean("refreshing"),
+            )
+        } ?: CatalogStatus(),
     )
 }
+
+data class CatalogStatus(
+    val checked: Long = 0,
+    val error: String = "",
+    val refreshing: Boolean = false,
+)
 
 data class Binding(
     val id: String,
@@ -252,6 +268,8 @@ data class PluginInfo(
     val rollback: Boolean,
     val available: Boolean,
     val hosts: List<String>,
+    val source: String = "custom",
+    val checksum: String = "",
 )
 
 data class JobSession(

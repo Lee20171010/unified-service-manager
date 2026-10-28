@@ -13,6 +13,7 @@ services:
       WEBDAV_PASSWORD: ${WEBDAV_PASSWORD:-}
     volumes:
       - application-data:/data
+      # Read-only compatibility source; official packages use GitHub.
       - ${PLUGIN_CATALOG:-./plugins}:/plugin-catalog:ro
       - ${SSH_DIR:-./secrets/ssh}:/run/ssh:ro
       - ${SOURCE_DIR:-./data/sources}:/sources

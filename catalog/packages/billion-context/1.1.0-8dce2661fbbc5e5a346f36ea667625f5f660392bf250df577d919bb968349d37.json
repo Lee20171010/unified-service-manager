@@ -1,0 +1,70 @@
+{
+  "author": "Unified",
+  "category": "package-management",
+  "description": "管理 billion-context 的 npm 安裝、版本、升級、卸載及環境檢查；可另行設定 OpenCode／Hermes 接入關係。",
+  "driver": "npm",
+  "fields": [
+    {
+      "choices": [],
+      "initial": "billion-context",
+      "label": "npm 套件名稱",
+      "name": "package_name",
+      "required": true
+    },
+    {
+      "choices": [
+        "user",
+        "project"
+      ],
+      "initial": "user",
+      "label": "安裝範圍",
+      "name": "scope",
+      "required": true
+    },
+    {
+      "choices": [],
+      "initial": "",
+      "label": "安裝 prefix／專案絕對目錄",
+      "name": "directory",
+      "required": true
+    },
+    {
+      "choices": [],
+      "initial": "/usr/bin/node",
+      "label": "Node 絕對路徑",
+      "name": "node",
+      "required": true
+    },
+    {
+      "choices": [],
+      "initial": "/usr/share/nodejs/npm/bin/npm-cli.js",
+      "label": "npm CLI JS 絕對路徑",
+      "name": "npm",
+      "required": true
+    },
+    {
+      "choices": [],
+      "initial": "latest",
+      "label": "版本（latest 或完整版本號）",
+      "name": "version",
+      "required": true
+    }
+  ],
+  "hosts": [
+    "opencode",
+    "hermes"
+  ],
+  "id": "billion-context",
+  "interface_version": 1,
+  "label": "billion-context",
+  "operations": [
+    "refresh",
+    "install",
+    "upgrade",
+    "uninstall",
+    "doctor"
+  ],
+  "package_name": "billion-context",
+  "resource_kind": "package",
+  "version": "1.1.0"
+}

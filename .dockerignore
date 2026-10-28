@@ -11,6 +11,8 @@
 !backend/tests/**
 !plugins/
 !plugins/**
+!catalog/
+!catalog/**
 !examples/
 !examples/plugin-authoring/
 !examples/plugin-authoring/**

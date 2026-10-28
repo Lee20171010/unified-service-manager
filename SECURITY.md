@@ -21,3 +21,7 @@ The publication workflow is manual. It checks out the exact reviewed commit, sca
 ## Reporting
 
 Report vulnerabilities privately to the repository maintainer using GitHub's private vulnerability reporting when available. Do not post tokens, private keys, personal host details or exploit output containing user data in public issues.
+
+## Official plugin downloads
+
+The central Application fetches only the fixed official raw.githubusercontent.com repository path, using verified HTTPS without redirects or forwarding administrator credentials. It bounds metadata/package downloads and validates schema, identifiers, metadata and package SHA-256 before installation. Automatic refresh changes metadata only. Installed content is immutable, local and activated explicitly; custom definitions have priority. Hash verification proves agreement with the trusted repository index, not that a command is harmless or sandboxed. Publishing plugin definitions requires the same source/privacy and command review as application code.

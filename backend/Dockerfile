@@ -9,8 +9,10 @@ RUN apk add --no-cache setpriv=2.42.3-r1 \
 RUN command -v setpriv
 COPY backend/unified ./unified
 COPY --chmod=755 backend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-COPY plugins /plugin-catalog
-ENV PLUGIN_CATALOG=/plugin-catalog
+COPY plugins/service-management/compose /builtin-plugins/service-management/compose
+COPY plugins/package-management/npm-packages /builtin-plugins/package-management/npm-packages
+COPY plugins/backup-storage/webdav /builtin-plugins/backup-storage/webdav
+ENV BUILTIN_PLUGINS=/builtin-plugins
 RUN mkdir /data && chown unified:unified /data
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 EXPOSE 8000

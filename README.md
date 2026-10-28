@@ -1,6 +1,6 @@
 # Unified Service Manager
 
-Manage services, packages and configuration snapshots across multiple hosts from a Web UI or native Android app. Both clients use the same authenticated central application API. Application/Web **0.4.5** provide ready-made service operations and per-instance command overrides. Android **0.4.6** includes [local diagnostic export](docs/ANDROID-DIAGNOSTICS.md) and fixes TLS connection cleanup after temporary server errors. The Android hotfix does not require new Docker images.
+Manage services, packages and configuration snapshots across multiple hosts from a Web UI or native Android app. Both clients use the same authenticated central application API. Release **0.5.0** separates generic built-in plugins from the official GitHub catalog. Both clients can check available versions and explicitly install or update verified local copies. Custom definitions and installed versions persist across image updates.
 
 ## Deploy with Docker Compose
 
@@ -9,7 +9,7 @@ Images are published under:
 - `ghcr.io/lee20171010/unified-application:latest`
 - `ghcr.io/lee20171010/unified-web:latest`
 
-`latest` tracks the most recent reviewed stable release. Set `IMAGE_TAG=0.4.5` to pin this release. Pulling downloads images; Up recreates containers when needed. Updating images preserves the catalog volume; import newer plugin JSON and explicitly Update installed plugins as described in [the catalog guide](docs/PLUGIN-CATALOG.md).
+`latest` tracks the most recent reviewed stable release. Set `IMAGE_TAG=0.5.0` to pin this release. Pulling downloads images; Up recreates containers when needed. Official metadata refreshes at startup and every six hours, with a manual check in both clients. Install/Update downloads the selected package; installed execution content changes only on explicit approval. See [the catalog guide](docs/PLUGIN-CATALOG.md).
 
 Use [deploy/omv/compose.yaml](deploy/omv/compose.yaml) with [env.example](deploy/omv/env.example). This configuration also works with ordinary Docker Compose. Set a unique `ADMIN_TOKEN` of at least 32 characters, then run:
 
@@ -20,7 +20,7 @@ docker compose up -d
 
 In OMV Compose, paste the YAML into **File**, the environment template into **Environment**, retain your existing token or fill a new one, save and select **Pull**, then **Up**. See [the OMV guide](docs/OMV-COMPOSE.md) for complete steps.
 
-The image prepares fresh writable directories and runs the server as UID/GID 10001. Data lives in `./data`, SSH keys in read-only `./ssh`, and configuration snapshot sources in `./sources`. The `plugin-catalog` named volume holds available plugin definitions. Preserve these paths and the Compose project identity during updates.
+The image prepares fresh writable directories and runs the server as UID/GID 10001. Data lives in `./data`, SSH keys in read-only `./ssh`, and configuration snapshot sources in `./sources`. The `plugin-catalog` named volume is retained for compatibility: modified legacy definitions are copied into `./data` without overwriting UI imports. Generic builtins come from the image at `/builtin-plugins`; GitHub metadata/downloads and installed packages live under `./data/plugins`. Preserve these paths and the Compose project identity during updates.
 
 The Web port binds to `127.0.0.1:4180` by default. Put it behind your HTTPS reverse proxy or Tailscale Serve. Web and Android connect to your own server address using the same administrator token. Android starts with empty connection settings.
 

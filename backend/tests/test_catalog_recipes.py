@@ -61,7 +61,8 @@ def fixture(tmp_path):
     return root,bin,state
 
 def manifest(name):
-    p=Config().plugin_catalog/'service-management'/name/'plugin.json'
+    from catalog_fixture import PLUGINS
+    p=PLUGINS/'service-management'/name/'plugin.json'
     return validate_manifest(json.loads(p.read_text()))
 
 def execute(name, action, fixture, overrides=None):
@@ -136,14 +137,14 @@ def test_retired_factory_templates_in_old_volume_preserve_installed_and_uploaded
     shutil.copyfile(src,dest)
     cfg=Config(mode='demo',token=DEMO_TOKEN,data_dir=tmp_path/'data',plugin_catalog=catalog)
     app=Application(cfg)
-    assert not app.plugins.discover()
+    assert 'ssh-service' not in app.plugins.discover()
     m=json.loads(src.read_text());raw=manifest_bytes(m)
     folder=app.plugins.root/'ssh-service'/'1.0.0';folder.mkdir(parents=True)
     (folder/'plugin.json').write_bytes(raw)
     record=dict(id='ssh-service',version='1.0.0',enabled=True,checksum=hashlib.sha256(raw).hexdigest())
     with app.store.connect() as db:
         db.execute('INSERT INTO entities VALUES (?,?,?)',('plugins','ssh-service',json.dumps(record)))
-    assert app.plugins.catalog()[0]['installed']['enabled']
+    assert next(p for p in app.plugins.catalog() if p['id']=='ssh-service')['installed']['enabled']
     assert app.plugins.require('ssh-service')==m
     app.plugins.import_document(m)
     assert app.plugins.discover()['ssh-service']==m

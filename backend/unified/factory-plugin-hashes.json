@@ -1,0 +1,46 @@
+{
+  "billion-context": [
+    "76e9ccc02a3984ca97c6395e8c954c2c192628e2bf102f102695fdf1b9485b2c",
+    "8dce2661fbbc5e5a346f36ea667625f5f660392bf250df577d919bb968349d37"
+  ],
+  "chatgpt": [
+    "860f011eda54fdd510b74c9e703d94da5a2fdccc60fc96b1d227e56fd70876dd",
+    "cd142a440651af3709751572d29dab9e63065232cb3f408457f2a9202f4d45f7"
+  ],
+  "compose": [
+    "bb99699ee845762525934631b7f3cb95f5afc285dd9405692b7e78b199877968"
+  ],
+  "hermes": [
+    "8598d2e4b1e891a6d44e0f4d8d0838c41fe89887ae9cc10cc82b69b977ca5cb0",
+    "db08be84c90f45de11139e358d899fc1618990e12e1a35ac757d303b6b2a1bad"
+  ],
+  "magpie": [
+    "b3395c78972fadeda5dff644ebc05b7bfcd6f687ae9e1735dafcdfc1433c1ccb"
+  ],
+  "npm-packages": [
+    "d30807414a5d3fe5fd3d1417a66ff7c1bb1df2c561bbdf7beee6a1146c4eaf70"
+  ],
+  "oc-codex-multi-auth": [
+    "29607544306dd95c00e5229e8e2d82ea0a22665f08cd7c2415785173ab14ed28"
+  ],
+  "openchamber": [
+    "2d375b692b493757ae24612ac0fffca90f0e3fa95dd8767958214fd01dd7f06e",
+    "856ca9eca006c1389fc0b3ae55da9f3e425920468772f6704de78eb6909110a4"
+  ],
+  "opencode": [
+    "02b9556107dcdb4076dc6851a8d8befe8483f9505e0a921df04a1f08ebf19d30",
+    "c8bbbe508dbdc6d2eb8e6dba9fa943c92858bf848c90ba81f32c5d08e7ff108c"
+  ],
+  "serverbox": [
+    "67766e3d4a3ebdc3bd399b9ea0a49b2918c437fa69498c8341aa8be44f39196f"
+  ],
+  "ssh-service": [
+    "7d4a7c648e968960851e49b0c107524756b7dc9d4cbdb7142f5f7eaa9a277927"
+  ],
+  "ssh-tool": [
+    "e59a7f3143fb4ab9f2d2123d6993d37b1a6c9438749c2a85de5234c8ede822e0"
+  ],
+  "webdav": [
+    "f017ecc2e93e19f28b33f91a398c46d4b69cc41f39a92fb0a0af7c27e58bad70"
+  ]
+}

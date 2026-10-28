@@ -2,7 +2,7 @@
 
 ## Runtime 0.3
 
-[RUNTIME-0.3.md](RUNTIME-0.3.md) defines the delivered plugin/resource execution contract. Catalog discovery reads JSON metadata only; installed checksummed manifests provide capabilities. A fresh or migrated instance has zero installed plugins. Web and Android share central activation and durable resources/jobs.
+[RUNTIME-0.3.md](RUNTIME-0.3.md) defines the delivered plugin/resource execution contract. Catalog discovery combines image-bundled generic definitions, GitHub metadata, and custom JSON documents; installed checksummed manifests provide capabilities. A fresh instance has zero installed plugins; upgrades preserve existing installations. Web and Android share central activation and durable resources/jobs.
 
 ## Ownership
 
@@ -48,7 +48,7 @@ The central Application layer runs on an administrator-controlled Docker host. S
 
 ## Plugin and adapter boundary
 
-`plugins.py` owns catalog discovery, document validation/import/export, immutable installation and lifecycle. Uploaded documents are atomically saved under `/data/plugins/catalog/<id>/plugin.json`, independently of installed copies under `/data/plugins/packages`. Uploaded entries take precedence over the read-only supplied catalog. Application serializes document writes with plugin lifecycle operations. Preview and import use the same validator; neither activates capabilities. Application constructs the active Registry from installed packages. Compose and common backup transports remain core primitives; reusable command/npm adapters consume independently installed manifests. Integration declarations and configuration are external to the image through `/plugin-catalog`.
+`plugins.py` owns catalog discovery, document validation/import/export, immutable installation and lifecycle. Uploaded documents are atomically saved under `/data/plugins/catalog/<id>/plugin.json`, independently of installed copies under `/data/plugins/packages`. Uploaded entries take precedence over builtins, GitHub entries and legacy definitions. Application serializes document writes with plugin lifecycle operations. Preview and import use the same validator; neither activates capabilities. Application constructs the active Registry from installed packages. Compose and common backup transports remain core primitives; reusable command/npm adapters consume independently installed manifests. Generic Compose/npm/WebDAV definitions are image-bundled at `/builtin-plugins`. `plugin_catalog.py` owns the fixed official GitHub source, bounded HTTPS metadata/downloads, SHA-256 and metadata verification, and atomic cache writes under `/data/plugins/official`. Only metadata refreshes automatically (startup/six-hour loop); install/update materializes immutable executable manifests. No client connects to GitHub. The optional legacy `/plugin-catalog` mount imports modified definitions into data without overwriting user imports, while exact historical factory definitions are omitted. Installed registry activation remains explicit.
 
 `resources.py` validates npm package names, scope, absolute executable paths and exact versions. Application resolves a requested version before queueing, locks installation identity and related hosts, and preserves observations on failed execution. Package installation and host binding are separate use cases. Commands bind values as quoted environment variables. Arbitrary administrator recipes run with the SSH account's authority.
 

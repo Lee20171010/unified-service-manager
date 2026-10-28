@@ -451,6 +451,23 @@ internal fun UnifiedScreen(
                         4 -> {
                             item { Text("安裝管理插件後才會出現對象表單。此動作不安裝遠端軟體。") }
                             item {
+                                val catalog = snapshot.pluginCatalog
+                                Text(
+                                    if (catalog.refreshing) "官方目錄：檢查中…"
+                                    else if (catalog.checked > 0) "官方目錄已取得；更新目錄不會自動替換已安裝插件。"
+                                    else "尚未取得官方目錄"
+                                )
+                                if (catalog.error.isNotBlank()) Text(catalog.error)
+                                OutlinedButton(
+                                    enabled = !state.busy && !catalog.refreshing,
+                                    onClick = {
+                                        mutate("/plugin-catalog/refresh", JSONObject(), {})
+                                    },
+                                ) {
+                                    Text("檢查插件更新")
+                                }
+                            }
+                            item {
                                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                     OutlinedButton(
                                         enabled = !state.busy,
@@ -499,6 +516,15 @@ internal fun UnifiedScreen(
                                 ContentCard(Modifier.fillMaxWidth()) {
                                     Text(p.label, style = MaterialTheme.typography.titleMedium)
                                     Text("${p.category} · ${p.version}", fontSize = 12.sp)
+                                    Text(
+                                        when (p.source) {
+                                            "builtin" -> "內建"
+                                            "github" -> "GitHub 官方"
+                                            "installed" -> "已安裝副本"
+                                            else -> "自訂"
+                                        },
+                                        fontSize = 12.sp,
+                                    )
                                     Text(p.description, fontSize = 12.sp)
                                     Text(
                                         p.installedVersion?.let {
@@ -534,7 +560,16 @@ internal fun UnifiedScreen(
                                             onClick = {
                                                 mutate(
                                                     "/plugins/${p.id}",
-                                                    JSONObject().put("action", action),
+                                                    JSONObject().put("action", action).apply {
+                                                        if (
+                                                            action == "install" ||
+                                                                action == "update"
+                                                        ) {
+                                                            put("version", p.version)
+                                                            if (p.checksum.isNotBlank())
+                                                                put("checksum", p.checksum)
+                                                        }
+                                                    },
                                                     {},
                                                 )
                                             },

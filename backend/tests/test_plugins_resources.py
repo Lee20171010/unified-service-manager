@@ -17,6 +17,8 @@ from test_application import wait
 def env(tmp_path):
     cfg = Config(mode="demo", token=DEMO_TOKEN, data_dir=tmp_path, demo_delay=0.005)
     api = create_app(cfg)
+    from catalog_fixture import seed_catalog
+    seed_catalog(api.state.application)
     with TestClient(api, headers={"Authorization": "Bearer " + DEMO_TOKEN}) as c:
         yield cfg, api.state.application, c
 
@@ -309,10 +311,12 @@ async def test_real_pty_input_exit_and_transient_shell(tmp_path):
         )
     )
     try:
-        for _ in range(200):
-            if "Proceed?" in "".join(logs):
-                break
-            await asyncio.sleep(0.005)
+        async with asyncio.timeout(10):
+            while "Proceed?" not in "".join(logs):
+                if task.done():
+                    await task
+                    raise AssertionError("Fixture command ended before its input prompt")
+                await asyncio.sleep(0.01)
         s = sessions.view("job")
         assert s["phase"] == "running"
         await sessions.input("job", s["generation"], 1, "yes\n")
@@ -324,10 +328,9 @@ async def test_real_pty_input_exit_and_transient_shell(tmp_path):
         with pytest.raises(ValueError):
             await sessions.input("job", "stale", 2, "no\n")
         await sessions.input("job", s["generation"], 2, "pwd\n")
-        for _ in range(200):
-            if "shell reply" in sessions.view("job")["output"]:
-                break
-            await asyncio.sleep(0.005)
+        async with asyncio.timeout(5):
+            while "shell reply" not in sessions.view("job")["output"]:
+                await asyncio.sleep(0.01)
         assert "shell reply" in sessions.view("job")["output"]
         assert logs == durable
         await sessions.input("job", s["generation"], 3, "", close=True)
@@ -378,7 +381,7 @@ async def test_npm_real_transport_uses_pinned_install_and_reads_observed_version
     )
     cfg = Config(mode="ssh", token="x" * 48, data_dir=tmp_path, ssh_dir=tmp_path)
     manifest = json.loads(
-        (cfg.plugin_catalog / "package-management/npm-packages/plugin.json").read_text()
+        (cfg.builtin_catalog / "package-management/npm-packages/plugin.json").read_text()
     )
     adapter = ResourceAdapter(cfg, manifest)
     host = dict(
@@ -429,7 +432,7 @@ async def test_npm_rejects_ambiguous_or_invalid_registry_version(
 ):
     cfg = Config(mode="ssh", token="x" * 48, data_dir=tmp_path)
     manifest = json.loads(
-        (cfg.plugin_catalog / "package-management/npm-packages/plugin.json").read_text()
+        (cfg.builtin_catalog / "package-management/npm-packages/plugin.json").read_text()
     )
     adapter = ResourceAdapter(cfg, manifest)
 

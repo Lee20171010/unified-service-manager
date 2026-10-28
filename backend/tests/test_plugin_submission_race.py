@@ -1,7 +1,7 @@
 """Legacy submissions and plugin updates share the same Application transaction boundary."""
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-from contextlib import suppress
+from contextlib import suppress, contextmanager
 import json
 import threading
 
@@ -46,13 +46,23 @@ async def test_legacy_submission_binds_and_executes_the_completed_plugin_update(
             original_guard.release()
 
     app.guard = ObservedGuard()
-    discover = app.plugins.discover
+    connect = app.store.connect
 
+    @contextmanager
     def pause_after_busy_check():
-        result = discover()
-        update_paused.set()
-        assert allow_update.wait(10), "Fixture update was not released"
-        return result
+        with connect() as db:
+            class ObservedConnection:
+                def execute(self, sql, *args):
+                    result = db.execute(sql, *args)
+                    if "WHERE kind='plugins' AND id=?" in sql and not update_paused.is_set():
+                        update_paused.set()
+                        assert allow_update.wait(10), "Fixture update was not released"
+                    return result
+
+                def __getattr__(self, name):
+                    return getattr(db, name)
+
+            yield ObservedConnection()
 
     create_job = app.store.create_job
 
@@ -61,7 +71,7 @@ async def test_legacy_submission_binds_and_executes_the_completed_plugin_update(
         submission_boundary.set()
         return create_job(job)
 
-    monkeypatch.setattr(app.plugins, "discover", pause_after_busy_check)
+    monkeypatch.setattr(app.store, "connect", pause_after_busy_check)
     monkeypatch.setattr(app.store, "create_job", record_submission_boundary)
 
     def legacy_submission():

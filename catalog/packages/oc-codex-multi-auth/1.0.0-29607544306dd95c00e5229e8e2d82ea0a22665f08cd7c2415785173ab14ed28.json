@@ -1,0 +1,69 @@
+{
+  "author": "Unified",
+  "category": "package-management",
+  "description": "oc-codex-multi-auth 管理接入；安裝管理插件不會安裝遠端軟體。",
+  "driver": "npm",
+  "fields": [
+    {
+      "choices": [],
+      "initial": "oc-codex-multi-auth",
+      "label": "npm 套件名稱",
+      "name": "package_name",
+      "required": true
+    },
+    {
+      "choices": [
+        "user",
+        "project"
+      ],
+      "initial": "user",
+      "label": "安裝範圍",
+      "name": "scope",
+      "required": true
+    },
+    {
+      "choices": [],
+      "initial": "",
+      "label": "安裝 prefix／專案絕對目錄",
+      "name": "directory",
+      "required": true
+    },
+    {
+      "choices": [],
+      "initial": "/usr/bin/node",
+      "label": "Node 絕對路徑",
+      "name": "node",
+      "required": true
+    },
+    {
+      "choices": [],
+      "initial": "/usr/share/nodejs/npm/bin/npm-cli.js",
+      "label": "npm CLI JS 絕對路徑",
+      "name": "npm",
+      "required": true
+    },
+    {
+      "choices": [],
+      "initial": "latest",
+      "label": "版本（latest 或完整版本號）",
+      "name": "version",
+      "required": true
+    }
+  ],
+  "hosts": [
+    "opencode"
+  ],
+  "id": "oc-codex-multi-auth",
+  "interface_version": 1,
+  "label": "oc-codex-multi-auth",
+  "operations": [
+    "refresh",
+    "install",
+    "upgrade",
+    "uninstall",
+    "doctor"
+  ],
+  "package_name": "oc-codex-multi-auth",
+  "resource_kind": "extension",
+  "version": "1.0.0"
+}

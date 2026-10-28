@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "plugins": [
+    {
+      "id": "magpie",
+      "label": "Magpie",
+      "version": "1.0.0",
+      "category": "application-backup",
+      "description": "Magpie 管理接入；安裝管理插件不會安裝遠端軟體。",
+      "hosts": [],
+      "sha256": "b3395c78972fadeda5dff644ebc05b7bfcd6f687ae9e1735dafcdfc1433c1ccb"
+    },
+    {
+      "id": "serverbox",
+      "label": "Flutter ServerBox",
+      "version": "1.0.0",
+      "category": "application-backup",
+      "description": "Flutter ServerBox 管理接入；安裝管理插件不會安裝遠端軟體。",
+      "hosts": [],
+      "sha256": "67766e3d4a3ebdc3bd399b9ea0a49b2918c437fa69498c8341aa8be44f39196f"
+    },
+    {
+      "id": "billion-context",
+      "label": "billion-context",
+      "version": "1.1.0",
+      "category": "package-management",
+      "description": "管理 billion-context 的 npm 安裝、版本、升級、卸載及環境檢查；可另行設定 OpenCode／Hermes 接入關係。",
+      "hosts": [
+        "opencode",
+        "hermes"
+      ],
+      "sha256": "8dce2661fbbc5e5a346f36ea667625f5f660392bf250df577d919bb968349d37"
+    },
+    {
+      "id": "oc-codex-multi-auth",
+      "label": "oc-codex-multi-auth",
+      "version": "1.0.0",
+      "category": "package-management",
+      "description": "oc-codex-multi-auth 管理接入；安裝管理插件不會安裝遠端軟體。",
+      "hosts": [
+        "opencode"
+      ],
+      "sha256": "29607544306dd95c00e5229e8e2d82ea0a22665f08cd7c2415785173ab14ed28"
+    },
+    {
+      "id": "chatgpt",
+      "label": "ChatGPT",
+      "version": "1.1.0",
+      "category": "service-management",
+      "description": "Linux DEB 桌面應用的 systemd 單元管理、版本查詢與 APT 升級；需已有服務單元及套件來源。",
+      "hosts": [],
+      "sha256": "860f011eda54fdd510b74c9e703d94da5a2fdccc60fc96b1d227e56fd70876dd"
+    },
+    {
+      "id": "hermes",
+      "label": "Hermes",
+      "version": "1.1.0",
+      "category": "service-management",
+      "description": "Linux systemd Gateway 啟停、版本查詢與 Hermes 原生升級；延後上游重啟，只重啟所選服務。",
+      "hosts": [],
+      "sha256": "8598d2e4b1e891a6d44e0f4d8d0838c41fe89887ae9cc10cc82b69b977ca5cb0"
+    },
+    {
+      "id": "openchamber",
+      "label": "OpenChamber",
+      "version": "1.1.0",
+      "category": "service-management",
+      "description": "Linux systemd 啟停與版本查詢；升級指定 npm 全域安裝，僅重啟所選服務。",
+      "hosts": [],
+      "sha256": "856ca9eca006c1389fc0b3ae55da9f3e425920468772f6704de78eb6909110a4"
+    },
+    {
+      "id": "opencode",
+      "label": "OpenCode",
+      "version": "1.1.0",
+      "category": "service-management",
+      "description": "Linux systemd 服務管理、版本查詢與 opencode upgrade；填寫現有服務單元與 CLI 路徑即可使用。",
+      "hosts": [],
+      "sha256": "02b9556107dcdb4076dc6851a8d8befe8483f9505e0a921df04a1f08ebf19d30"
+    }
+  ]
+}

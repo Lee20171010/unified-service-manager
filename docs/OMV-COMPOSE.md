@@ -1,6 +1,6 @@
-# Docker / OMV Compose deployment · 0.4.5
+# Docker / OMV Compose deployment · 0.5.0
 
-The release uses two images: `ghcr.io/lee20171010/unified-application:0.4.5` and `ghcr.io/lee20171010/unified-web:0.4.5`. Public images can be pulled without registry login. The current image platform is linux/amd64.
+The release uses two images: `ghcr.io/lee20171010/unified-application:0.5.0` and `ghcr.io/lee20171010/unified-web:0.5.0`. Public images can be pulled without registry login. The current image platform is linux/amd64.
 
 ## OMV setup
 
@@ -16,7 +16,7 @@ WEBDAV_USER=
 WEBDAV_PASSWORD=
 ```
 
-Generate a token with `openssl rand -hex 32`, or retain the existing token when updating. Save and select **Pull**, then **Up**. The shipped configuration uses `IMAGE_TAG=latest` with `pull_policy: always`; Up also checks the registry. Set `IMAGE_TAG=0.4.5` to pin this release. No image build, tar download, manual mkdir/chown or separate initialization service is required.
+Generate a token with `openssl rand -hex 32`, or retain the existing token when updating. Save and select **Pull**, then **Up**. The shipped configuration uses `IMAGE_TAG=latest` with `pull_policy: always`; Up also checks the registry. Set `IMAGE_TAG=0.5.0` to pin this release. No image build, tar download, manual mkdir/chown or separate initialization service is required.
 
 Relative mounts resolve beside the Compose file. Select the desired data disk in OMV's Compose settings before initial deployment.
 
@@ -25,7 +25,7 @@ Relative mounts resolve beside the Compose file. Select the desired data disk in
 | `./data:/data` | Database, inventory, jobs/logs, plugin imports/installations and archive cache |
 | `./ssh:/run/ssh:ro` | Dedicated SSH keys and verified known_hosts |
 | `./sources:/sources` | Application configuration snapshot sources and restore targets |
-| `plugin-catalog:/plugin-catalog:ro` | Available plugin definitions in a persistent named volume |
+| `plugin-catalog:/plugin-catalog:ro` | Read-only compatibility source for legacy custom definitions; builtins use the image path |
 
 The entrypoint prepares root-owned empty data/source directories and execs the server as 10001:10001 with no capabilities. Existing nonempty directories and other owners are preserved. SSH contents are never modified; keys must be readable by UID 10001, with suitably restricted permissions. With an explicit non-root Docker `user`, initialization is skipped and mounts must already be writable.
 
@@ -45,7 +45,7 @@ After connecting, install desired plugins and register your hosts/resources. The
 
 Keep the same Compose project name, environment values and host mount paths. If existing data uses an absolute path, retain it instead of switching to an empty relative directory. With `IMAGE_TAG=latest`, use **Pull**, then **Up** to adopt the reviewed stable release. To select an exact release, change `IMAGE_TAG` to that numeric version first. With the CLI, use `docker compose pull` followed by `docker compose up -d`.
 
-The persistent plugin-catalog volume keeps its definitions across image updates. Download the plugin ZIP from the GitHub release, extract it, and import each desired plugin.json through the Plugin page. Save it to the catalog, then explicitly Update or Install. Existing resources and custom commands are retained. See [PLUGIN-CATALOG.md](PLUGIN-CATALOG.md) for supported service environments.
+Application refreshes official GitHub metadata automatically at startup and every six hours. Both clients offer Check plugin updates and explicit Install/Update. Generic builtins update with the image. Existing installed plugins and custom definitions remain local under ./data/plugins. Keep the compatibility catalog volume and project identity during upgrade; modified legacy documents are copied into data without overwriting UI imports. No manual JSON download is needed for official online packages. See [PLUGIN-CATALOG.md](PLUGIN-CATALOG.md) for migration and offline behavior.
 
 Earlier offline images remain usable under their existing tags. The first registry release contains security/privacy changes and must be pulled; changing an old tag does not apply those changes. Application 0.4.2 or newer initializes storage inside its entrypoint. Remove any earlier storage-init service/dependency and application cap_drop setting when adopting this Compose. An obsolete stopped storage-init container can be removed separately without deleting volumes.
 

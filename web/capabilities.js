@@ -37,3 +37,11 @@ export function serviceBody(values) {
     ),
   };
 }
+
+export function pluginSourceLabel(source) {
+  return {builtin: "內建", github: "GitHub 官方", custom: "自訂", installed: "已安裝副本"}[source] || "本機";
+}
+export function pluginActionBody(plugin, action) {
+  if (action !== "install" && action !== "update") return {action};
+  return {action, version: plugin.version, ...(plugin.artifact_checksum ? {checksum: plugin.artifact_checksum} : {})};
+}

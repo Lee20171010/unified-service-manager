@@ -112,6 +112,10 @@ def create_app(config=None, registry=None):
     def plugins():
         return application.plugins.catalog() if application.plugins else []
 
+    @router.post("/plugin-catalog/refresh")
+    def refresh_plugin_catalog():
+        return application.refresh_plugin_catalog()
+
     @router.post("/plugin-documents/validate")
     def validate_document(body: PluginDocument):
         return application.plugin_document("validate", body.manifest)
@@ -129,7 +133,7 @@ def create_app(config=None, registry=None):
 
     @router.post("/plugins/{id}")
     def plugin_action(id: str, body: PluginOperation):
-        return application.change_plugin(id, body.action)
+        return application.change_plugin(id, body.action, body.version, body.checksum)
 
     @router.get("/resources")
     def resources():

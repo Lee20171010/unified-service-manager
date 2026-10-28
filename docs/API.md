@@ -1,6 +1,6 @@
 # API · 0.4
 
-Application/Web 0.4.5 and Android 0.4.6 retain API/schema v1. The release adds ready-made service recipes, optional per-instance command overrides and native local diagnostics. Both clients use the same installed plugin descriptors and managed operations.
+Application/Web/Android 0.5.0 retain API/schema v1. The release adds central GitHub catalog refresh and verified package downloads alongside generic builtins and persistent custom definitions. Both clients use the same installed plugin descriptors and managed operations.
 
 Web, Android and Application 0.4.0 add plugin document authoring. Existing resource and job APIs remain compatible; schema version stays v1.
 
@@ -55,3 +55,9 @@ Four service packages v1.1.0 provide Linux/systemd refresh, start, stop, restart
 Legacy service and backup submissions share Application's plugin lifecycle lock with resource submissions. Plugin version/settings binding and durable job insertion form one guarded operation; plugin changes cannot pass their busy-job check concurrently with an older binding being queued.
 
 Android 0.4.6 moves TLS connection disposal off the UI thread. Transient 502 responses continue to use read-only reconnect/poll retry; saved credentials and operation replay policy are unchanged. No server API or image update is required.
+
+## Official plugin catalog · 0.5.0
+
+GET /snapshot adds plugin_catalog {checked (Unix milliseconds or null), error, refreshing, count, source}. Plugin entries add source (builtin/github/custom/installed) and artifact_checksum for GitHub packages. Existing fields and API/schema v1 are preserved.
+
+POST /plugin-catalog/refresh (authenticated) refreshes metadata only and returns catalog status. Network/validation failure returns status with error and preserves the prior cache. POST /plugins/{id} accepts optional version and checksum alongside action for install/update; mismatches return 422 PLUGIN_CHANGED. Both current clients submit the displayed identity. GitHub manifests download on explicit install/update or export, with fixed-origin HTTPS, size limits, content checksum and metadata checks. Downloads do not queue host operations. Busy-job locking, custom precedence, immutable installations and rollback are preserved. Older clients remain compatible; no installed plugin is automatically upgraded.

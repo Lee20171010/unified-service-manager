@@ -11,6 +11,7 @@ services:
       WEBDAV_PASSWORD: ${WEBDAV_PASSWORD:-}
     volumes:
       - ./data:/data
+      # Compatibility: old custom definitions are imported into ./data on startup.
       - plugin-catalog:/plugin-catalog:ro
       - ./ssh:/run/ssh:ro
       - ./sources:/sources
@@ -31,6 +32,7 @@ services:
     depends_on:
       application:
         condition: service_healthy
+
 
 volumes:
   plugin-catalog:

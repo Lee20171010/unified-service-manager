@@ -14,9 +14,10 @@ def config(tmp_path):
 
 @pytest.fixture
 def client(config):
-    with TestClient(
-        create_app(config), headers={"Authorization": "Bearer " + DEMO_TOKEN}
-    ) as c:
+    from catalog_fixture import seed_catalog
+    api = create_app(config)
+    seed_catalog(api.state.application)
+    with TestClient(api, headers={"Authorization": "Bearer " + DEMO_TOKEN}) as c:
         for id in ("compose","magpie","serverbox","webdav"):
             assert c.post("/api/v1/plugins/"+id,json={"action":"install"}).status_code==200
         yield c

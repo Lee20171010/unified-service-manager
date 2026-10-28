@@ -1,6 +1,6 @@
 # 插件目录与默认操作
 
-目录提供 11 个具体管理插件。用户仍需在插件页按 Install，再新增受管对象并选择主机。创建自己的插件时选择「服务」或「工具」即可；这两个类型不需要另装一个通用插件。
+目录分为镜像提供的 3 个通用插件（Docker Compose、npm 套件／CLI、WebDAV），以及 GitHub 提供的 8 个特定软件插件。用户仍需在插件页按 Install，再新增受管对象并选择主机。创建自己的插件时选择「服务」或「工具」即可；这两个类型不需要另装一个通用插件。
 
 | 插件 | 安装后提供的管理能力 | 环境与需要填写的参数 |
 | --- | --- | --- |
@@ -44,18 +44,24 @@ Job Console 显示执行输出，支持升级程序的交互输入。环境检�
 
 类型决定操作和状态表达，插件负责实际命令与参数。仓库 `examples/plugin-authoring/` 提供作者参考，不放在新安装的可安装目录。已经安装的旧通用插件及用户导入的同名插件继续保留。
 
-## 更新已经部署的目录
+## 安装与更新
 
-本次默认操作与表单调整由 Application／Web／Android 0.4.5 提供。先通过 OMV Compose Pull → Up 更新核心，再导入新版 JSON；安装 APK 本身不会更新 NAS。
+Application／Web／Android 0.5.0 使用同一个中央插件目录。Application 启动时及每六小时从官方 GitHub 读取名称、说明、版本与 SHA-256；两端的「检查插件更新」可立即刷新。目录刷新不会启用插件或替换已安装内容。Demo 模式不连接 GitHub，可导入测试 JSON。
 
-OMV 的 plugin-catalog 是持久化卷，更新镜像不会覆盖里面已有的定义。升级到 0.4.5 或更新的兼容版本后，可在插件页「导入插件」选择新版 `plugin.json`，校验并保存，再按 Update（尚未安装则按 Install）。导入和启用是两个步骤，资源设置保留。后续同接口的插件更新只需重复导入/Update，不用重建镜像。
+GitHub 插件按 Install／更新时才下载所选版本的 JSON，校验大小、SHA-256、接口和目录元数据，再保存为本机安装副本。GitHub 无法连接时保留上次目录并显示错误，已安装插件继续使用。未曾下载的版本需要网络；导入 JSON 仍可用于离线安装。版本变化后客户端须重新确认，管理插件安装不会安装远端软件。
 
-导出的目录 ZIP 是分发包：解压后逐个导入 JSON，UI 不直接导入 ZIP。已安装文件以独立版本和校验和保存，可以回退。billion-context 的显示名称统一为包名；插件 ID 未变，现有对象和关联不变。
+通用内建定义位于镜像 `/builtin-plugins`，随镜像更新可用版本。GitHub 缓存位于 `/data/plugins/official`，自订文件位于 `/data/plugins/catalog`，已安装内容位于 `/data/plugins/packages`。UI 自订定义优先，不被官方同步覆盖。
+
+从 0.4 升级时保持 data 和 Compose 项目身份。旧 `plugin-catalog` 卷继续只读挂载以兼容旧部署：精确匹配旧官方发行的定义不参与当前目录；修改过的定义在获得单 worker 锁后复制到 data，自订导入优先，原卷文件保留。安装记录、资源与命令覆盖不变。billion-context 可用名称和版本自动来自 GitHub 目录；仍需手动安装／更新才替换执行内容。
+
+回退镜像时使用原 Compose 和保留的旧卷；data 中的安装副本与 schema v1 保持兼容。GitHub 元数据与下载缓存不改变安装状态。不要删除 data 或执行 down -v。
 
 ## 开发与验证
 
 服务配方源码在 `plugin-sources/linux-service.py`；运行 `python3 scripts/build-plugin-catalog.py` 生成四个独立、自包含的 JSON。目标主机需要 Python 3；无需把此源码复制到容器或 SSH 主机。每个插件仍能单独导出、导入和升级。
 
-运行 `python3 scripts/build-plugin-catalog.py --check` 检查源码和发行 JSON 一致。`backend/tests/test_catalog_recipes.py` 用隔离的命令桩验证六项操作、指定目标、空格路径、版本、升级失败、停止状态保持、默认值和覆盖优先级；这些是 fixture 结果，不是用户主机的运行验收。Web/Android 表单均验证进阶命令折叠时仍保留原值。
+官方 GitHub 目录来源为 `plugins/`。特定软件插件修改时增加独立版本，执行 `python3 scripts/build-github-catalog.py` 生成 `catalog/index.json` 与带内容哈希的 JSON；已发行包必须保留、不能修改同版本内容。审核后发布这些文件即可更新目录，无需重建核心镜像。新增驱动仍需核心更新。
+
+运行 `python3 scripts/build-github-catalog.py --check` 和 `python3 scripts/build-plugin-catalog.py --check` 检查源码和发行 JSON 一致。`backend/tests/test_catalog_recipes.py` 用隔离的命令桩验证六项操作、指定目标、空格路径、版本、升级失败、停止状态保持、默认值和覆盖优先级；这些是 fixture 结果，不是用户主机的运行验收。Web/Android 表单均验证进阶命令折叠时仍保留原值。
 
 上游依据：[OpenCode CLI](https://opencode.ai/docs/cli/)、[OpenChamber](https://github.com/openchamber/openchamber)、[Hermes CLI](https://hermes-agent.nousresearch.com/docs/reference/cli-commands)。具体插件目录的 README 说明所支持安装方式。

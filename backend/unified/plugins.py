@@ -7,6 +7,7 @@ import os
 import tempfile
 from pathlib import Path
 from .adapters.contracts import AdapterError, ConfigField, Descriptor
+from .plugin_catalog import RemoteCatalog, BUILTIN_IDS, atomic_write
 
 ID = re.compile(r"[a-z][a-z0-9-]{0,63}")
 VERSION = re.compile(r"\d+\.\d+\.\d+(?:-[a-zA-Z0-9.-]+)?")
@@ -32,6 +33,8 @@ RETIRED_FACTORY_TEMPLATES = {
     "ssh-tool": "e59a7f3143fb4ab9f2d2123d6993d37b1a6c9438749c2a85de5234c8ede822e0",
 }
 
+
+FACTORY_HASHES = json.loads(Path(__file__).with_name("factory-plugin-hashes.json").read_text())
 
 def manifest_bytes(m):
     try:
@@ -166,27 +169,51 @@ class Plugins:
         self.root.mkdir(parents=True, exist_ok=True)
         self.catalog_root = config.data_dir / "plugins" / "catalog"
         self.catalog_root.mkdir(parents=True, exist_ok=True)
+        self.remote = RemoteCatalog(config)
+
+    def migrate_legacy(self):
+        # Retain the read-only originals for rollback. Existing UI imports take priority.
+        for path in sorted(self.config.plugin_catalog.glob("*/*/plugin.json")):
+            try:
+                if path.is_symlink() or path.stat().st_size > MAX_DOCUMENT_BYTES:
+                    continue
+                m = validate_manifest(json.loads(path.read_text()))
+                raw = manifest_bytes(m)
+            except (OSError, ValueError, TypeError, KeyError, RecursionError):
+                continue
+            digest = hashlib.sha256(raw).hexdigest()
+            if digest in FACTORY_HASHES.get(m["id"], []) or digest == RETIRED_FACTORY_TEMPLATES.get(m["id"]):
+                continue
+            target = self.catalog_root / m["id"] / "plugin.json"
+            if not target.exists():
+                atomic_write(target, raw)
 
     def discover(self):
         found = {}
-        for path in sorted(self.config.plugin_catalog.glob("*/*/plugin.json")):
+        paths = [(p, False) for p in sorted(self.config.plugin_catalog.glob("*/*/plugin.json"))]
+        paths += [(p, True) for p in sorted(self.config.builtin_catalog.glob("*/*/plugin.json")) if p.parent.name in BUILTIN_IDS]
+        for path, builtin in paths:
             try:
                 if path.is_symlink() or path.stat().st_size > 131072:
                     continue
                 m = validate_manifest(json.loads(path.read_text()))
-                if hashlib.sha256(manifest_bytes(m)).hexdigest() == RETIRED_FACTORY_TEMPLATES.get(m["id"]):
+                digest = hashlib.sha256(manifest_bytes(m)).hexdigest()
+                if not builtin and (digest in FACTORY_HASHES.get(m["id"], []) or digest == RETIRED_FACTORY_TEMPLATES.get(m["id"])):
                     continue
-                if m["id"] in found:
-                    raise ValueError("PLUGIN_MANIFEST: duplicate catalog id")
-                found[m["id"]] = m
+                if builtin:
+                    found.setdefault(m["id"], m)
+                else:
+                    if m["id"] in found:
+                        raise ValueError("PLUGIN_MANIFEST: duplicate catalog id")
+                    found[m["id"]] = m
             except (OSError, ValueError, KeyError, TypeError) as e:
                 # A malformed package never contributes capabilities.
                 found[
-                    "invalid:" + str(path.relative_to(self.config.plugin_catalog))
+                    "invalid:" + path.parent.name
                 ] = {
                     "id": "invalid",
                     "label": path.parent.name,
-                    "error": str(e),
+                    "error": "Legacy plugin definition is invalid or unreadable",
                     "available": False,
                 }
         # Uploaded documents take precedence over the read-only supplied catalog.
@@ -230,40 +257,51 @@ class Plugins:
             Path(name).unlink(missing_ok=True)
         return preview
 
+    def resolve(self, id):
+        local = self.discover().get(id)
+        if local is not None:
+            if local.get("error"):
+                raise ValueError("PLUGIN_UNAVAILABLE: package not available")
+            return local
+        entry = self.remote.available().get(id)
+        if entry:
+            return self.remote.manifest(entry)
+        record = self.installed().get(id)
+        if record:
+            return self.manifest(record)
+        raise KeyError(id)
+
     def export_document(self, id):
         if not ID.fullmatch(id):
             raise ValueError("Invalid plugin id")
-        m = self.discover().get(id)
-        if m is None:
-            record = self.installed().get(id)
-            if record is None:
-                raise KeyError(id)
-            m = self.manifest(record)
-        if m.get("error"):
-            raise ValueError("PLUGIN_UNAVAILABLE: package not available")
-        return validate_manifest(m)
+        return validate_manifest(self.resolve(id))
 
     def installed(self):
         return {p["id"]: p for p in self.store.list("plugins")}
 
     def catalog(self):
-        available = self.discover()
+        available = {id: dict(p, source="github", artifact_checksum=p["sha256"])
+                     for id, p in self.remote.available().items()}
+        for id, m in self.discover().items():
+            source = "custom"
+            builtin = self.config.builtin_catalog / m.get("category", "") / id / "plugin.json"
+            if id in BUILTIN_IDS and builtin.is_file():
+                try:
+                    if json.loads(builtin.read_text()) == m and not (self.catalog_root / id / "plugin.json").exists():
+                        source = "builtin"
+                except (OSError, ValueError):
+                    pass
+            available[id] = dict(m, source=source)
         installed = self.installed()
         for id, p in installed.items():
             if id not in available:
                 try:
-                    available[id] = self.manifest(p)
+                    available[id] = dict(self.manifest(p), source="installed")
                 except (OSError, ValueError):
-                    available[id] = {
-                        "id": id,
-                        "label": id,
-                        "error": "Installed package checksum or manifest invalid",
-                        "available": False,
-                    }
-        return [
-            dict(m, installed=installed.get(id), available="error" not in m)
-            for id, m in available.items()
-        ]
+                    available[id] = {"id": id, "label": id,
+                        "error": "Installed package checksum or manifest invalid", "source": "installed"}
+        return [dict(m, installed=installed.get(id), available="error" not in m)
+                for id, m in available.items()]
 
     def manifest(self, p):
         path = self.root / p["id"] / p["version"] / "plugin.json"
@@ -282,9 +320,30 @@ class Plugins:
                     pass
         return result
 
-    def change(self, id, action):
+    def selection(self, id, version=None, checksum=None):
         if not ID.fullmatch(id):
             raise ValueError("Invalid plugin id")
+        view = next((p for p in self.catalog() if p["id"] == id), None)
+        if not view or view.get("error") or (version is not None and version != view.get("version")) or (checksum is not None and checksum != view.get("artifact_checksum")):
+            raise ValueError("PLUGIN_CHANGED: 目錄已變更，請重新整理後確認版本")
+        return view
+
+    def materialize(self, view):
+        if view["source"] == "github":
+            return self.remote.manifest(view)
+        return validate_manifest({k: v for k, v in view.items() if k not in {"source", "installed", "available"}})
+
+    def change(self, id, action, prepared=None):
+        if not ID.fullmatch(id):
+            raise ValueError("Invalid plugin id")
+        candidate = None
+        if action in ("install", "update"):
+            view, candidate = prepared
+            current = self.selection(id)
+            # Application holds its lifecycle lock only for selection/revalidation/commit.
+            # Remote refresh can change metadata during download; require renewed consent.
+            if current != view:
+                raise ValueError("PLUGIN_CHANGED: 目錄已變更，請重新整理後確認版本")
         with self.store.connect() as db:
             db.execute("BEGIN IMMEDIATE")
             jobs = [
@@ -300,7 +359,7 @@ class Plugins:
             ).fetchone()
             old = json.loads(row[0]) if row else None
             if action in ("install", "update"):
-                m = self.discover().get(id)
+                m = candidate
                 if not m or m.get("error"):
                     raise ValueError("PLUGIN_UNAVAILABLE: package not available")
                 raw = (

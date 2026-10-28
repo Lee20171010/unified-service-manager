@@ -40,6 +40,7 @@ class Application:
         )
         self.wake = asyncio.Event()
         self.worker = None
+        self.catalog_worker = None
         self.lock_file = None
 
     async def start(self):
@@ -51,16 +52,41 @@ class Application:
             raise RuntimeError(
                 "A worker already owns this data directory; run exactly one application instance"
             )
+        if self.plugins:
+            self.plugins.migrate_legacy()
         self.store.recover()
         if self.config.mode == "demo" and not self.store.list("hosts"):
             self.seed()
         self.worker = asyncio.create_task(self.run(), name="unified-job-worker")
+        if self.plugins and self.config.mode != "demo":
+            self.catalog_worker = asyncio.create_task(self.refresh_catalog_loop(), name="plugin-catalog")
+
+    async def refresh_catalog_loop(self):
+        while True:
+            fetch = asyncio.create_task(asyncio.to_thread(self.plugins.remote.refresh))
+            try:
+                await asyncio.shield(fetch)
+            except asyncio.CancelledError:
+                await fetch
+                raise
+            await asyncio.sleep(6 * 60 * 60)
+
+    def refresh_plugin_catalog(self):
+        if not self.plugins:
+            raise ValueError("Custom registry has no plugin catalog")
+        return self.plugins.remote.refresh()
 
     async def close(self):
         if self.worker:
             self.worker.cancel()
+        if self.catalog_worker:
+            self.catalog_worker.cancel()
+        if self.worker:
             with suppress(asyncio.CancelledError):
                 await self.worker
+        if self.catalog_worker:
+            with suppress(asyncio.CancelledError):
+                await self.catalog_worker
         await self.sessions.close()
         if self.lock_file:
             self.lock_file.close()
@@ -122,16 +148,29 @@ class Application:
                 storages.append(base.storage("webdav"))
         return Registry(services, apps, storages)
 
-    def change_plugin(self, id, action):
+    def change_plugin(self, id, action, version=None, checksum=None):
+        if not self.plugins:
+            raise ValueError("Custom registry has no plugin catalog")
+        prepared = None
+        if action in ("install", "update"):
+            with self.guard:
+                selected = self.plugins.selection(id, version, checksum)
+            prepared = (selected, self.plugins.materialize(selected))
         with self.guard:
-            if not self.plugins:
-                raise ValueError("Custom registry has no plugin catalog")
-            result = self.plugins.change(id, action)
+            result = self.plugins.change(id, action, prepared)
             self.registry = self.plugin_registry()
             self.backups.registry = self.registry
             return result
 
     def plugin_document(self, action, document=None, id=None):
+        if action == "export":
+            if not self.plugins:
+                raise ValueError("Custom registry has no plugin catalog")
+            with self.guard:
+                if not any(p["id"] == id for p in self.plugins.catalog()):
+                    raise KeyError(id)
+                selected = self.plugins.selection(id)
+            return self.plugins.materialize(selected)
         with self.guard:
             if not self.plugins:
                 raise ValueError("Custom registry has no plugin catalog")
@@ -139,8 +178,6 @@ class Application:
                 return self.plugins.preview_document(document)
             if action == "import":
                 return self.plugins.import_document(document)
-            if action == "export":
-                return self.plugins.export_document(id)
             raise ValueError("Invalid document action")
 
     def snapshot(self):
@@ -153,6 +190,7 @@ class Application:
             mode=self.config.mode,
             hosts=self.store.list("hosts"),
             plugins=self.plugins.catalog() if self.plugins else [],
+            plugin_catalog=self.plugins.remote.status() if self.plugins else {},
             adapters=self.registry.catalog(),
             resources=resources,
             services=[s for s in resources if s.get("kind", "service") == "service"],

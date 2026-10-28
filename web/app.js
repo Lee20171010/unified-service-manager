@@ -6,7 +6,9 @@ import {
   canRestore,
   serviceBody,
   isCommandOverride,
-} from "./capabilities.js?v=0.4.5";
+  pluginSourceLabel,
+  pluginActionBody,
+} from "./capabilities.js?v=0.5.0";
 import {
   request,
   setToken,
@@ -307,7 +309,7 @@ function plugins() {
       "插件",
       "先安裝管理插件，再登記受管對象；安裝插件不會安裝遠端軟體。",
     ) +
-    `<div class="toolbar">${button("建立命令插件", "plugin-create")}${button("匯入插件", "plugin-import")}<select id="plugin-category" aria-label="插件分類">${[
+    `<div class="notice">官方目錄：${data.plugin_catalog?.refreshing ? "檢查中…" : data.plugin_catalog?.checked ? `上次檢查 ${date(data.plugin_catalog.checked)}` : "尚未取得"}${data.plugin_catalog?.error ? ` · ${esc(data.plugin_catalog.error)}` : ""} · 更新目錄不會自動替換已安裝插件。</div><div class="toolbar">${button("檢查插件更新", "plugin-check")}${button("建立命令插件", "plugin-create")}${button("匯入插件", "plugin-import")}<select id="plugin-category" aria-label="插件分類">${[
       ["", "全部分類"],
       ["service-management", "服務管理"],
       ["package-management", "套件與應用插件"],
@@ -340,7 +342,7 @@ function plugins() {
       )
       .map(
         (p) =>
-          `<section class="panel host-card"><h3>${esc(p.label)}</h3><p>${esc(p.category)} · ${esc(p.version)}</p><p class="description">${esc(p.description || p.error)}</p><p>${p.installed ? `已安裝 ${esc(p.installed.version)} · ${p.installed.enabled ? "啟用" : "停用"}` : "尚未安裝"}</p><div class="detail-actions">${p.available !== false ? button("匯出 JSON", "plugin-export", p.id, "compact") : ""}${(p.available === false ? [] : !p.installed ? ["install"] : p.installed.enabled ? ["disable", "update", "remove", ...(p.installed.previous ? ["rollback"] : [])] : ["enable", "update", "remove", ...(p.installed.previous ? ["rollback"] : [])]).map((a) => button({ install: "Install", update: "更新插件", enable: "啟用", disable: "停用", remove: "移除", rollback: "回退" }[a], "plugin-change", p.id + ":" + a, "compact")).join("")}</div></section>`,
+          `<section class="panel host-card"><h3>${esc(p.label)}</h3><p>${esc(p.category)} · ${esc(p.version)} · ${esc(pluginSourceLabel(p.source))}</p><p class="description">${esc(p.description || p.error)}</p><p>${p.installed ? `已安裝 ${esc(p.installed.version)} · ${p.installed.enabled ? "啟用" : "停用"}` : "尚未安裝"}</p><div class="detail-actions">${p.available !== false ? button("匯出 JSON", "plugin-export", p.id, "compact") : ""}${(p.available === false ? [] : !p.installed ? ["install"] : p.installed.enabled ? ["disable", "update", "remove", ...(p.installed.previous ? ["rollback"] : [])] : ["enable", "update", "remove", ...(p.installed.previous ? ["rollback"] : [])]).map((a) => button({ install: "Install", update: "更新插件", enable: "啟用", disable: "停用", remove: "移除", rollback: "回退" }[a], "plugin-change", p.id + ":" + a, "compact")).join("")}</div></section>`,
       )
       .join("")}</div>`
   );
@@ -625,6 +627,13 @@ document.addEventListener("click", async (e) => {
       openPluginEditor(a === "plugin-create" ? "create" : "import", request, async () => {
         await refresh(); render(); toast("已儲存，請在插件卡片按 Install／更新插件");
       });
+    } else if (a === "plugin-check") {
+      b.disabled = true;
+      try {
+        const result = await request("/plugin-catalog/refresh", {});
+        await refresh(); render();
+        toast(result.error || (result.refreshing ? "正在檢查官方插件目錄…" : "官方插件目錄已更新；請選擇要安裝／更新的插件。"));
+      } finally { b.disabled = false; }
     } else if (a === "plugin-export") {
       b.disabled = true;
       try { downloadPlugin(await request(`/plugins/${id}/manifest`)); }
@@ -632,7 +641,8 @@ document.addEventListener("click", async (e) => {
     } else if (a === "plugin-change") {
       const [plugin, action] = id.split(":");
       b.disabled = true;
-      await request("/plugins/" + plugin, { action });
+      const selected = data.plugins.find(p => p.id === plugin);
+      await request("/plugins/" + plugin, pluginActionBody(selected, action));
       await refresh();
       render();
     } else if (a === "job-interrupt" || a === "job-end")

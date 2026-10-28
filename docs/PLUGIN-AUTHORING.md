@@ -26,7 +26,7 @@ Web 与 Android 均在「插件」页面提供创建、导入和导出。Applica
 - 导入已存在 ID 的新版本会替换可安装目录项，预览会说明替换关系。安装版本及运行中任务保持原状，需在卡片手动 Update。
 - 同一版本的内容不可覆盖。导入重复且相同的内容可安全重复保存。
 - 更新安装版本前须等相关任务结束；已有回退、禁用、移除操作仍然适用。
-- UI 文件：`/data/plugins/catalog/<id>/plugin.json`，按 ID 独立目录，分类来自 manifest 的 `category`。UI 文件优先于只读 `/plugin-catalog` 中同 ID 的包。
+- UI 文件：`/data/plugins/catalog/<id>/plugin.json`，按 ID 独立目录，分类来自 manifest 的 `category`。UI 文件优先于内建、GitHub 和旧挂载目录中同 ID 的定义。
 - 已安装且带校验和的副本：`/data/plugins/packages/<id>/<version>/plugin.json`。可安装与已安装目录分离。
 - 备份整个 data 目录会同时包含导入文件和安装记录。回退到 0.3 前保留 0.4 数据备份；0.3 不发现 UI 导入目录，但已安装 interface v1 副本格式兼容。
 
@@ -35,3 +35,9 @@ Web 与 Android 均在「插件」页面提供创建、导入和导出。Applica
 `commands` 和 `npm` 是可复用执行驱动。UI 创建表单覆盖命令插件；其他现有驱动使用 JSON 导入。Compose、Magpie、ServerBox、WebDAV 原语绑定现有 ID，全新执行协议或备份格式需要扩展核心。命令使用所选 SSH 账号权限，插件不构成隔离沙箱。
 
 先在 demo 验证表单、安装、资源创建和输出交互。demo 不执行真实命令；实际命令要在专用测试主机/目录验证成功、失败、参数引用和状态返回，不能把 demo 成功当成真实运行证明。中央回归测试 `bash scripts/test.sh`；Android `android/gradlew -p android :app:assembleDebug :app:testDebugUnitTest --max-workers=1`。
+
+## 发布到官方 GitHub 目录 · 0.5
+
+通用 Compose/npm/WebDAV 插件随镜像提供；特定软件插件从官方仓库的 catalog 取得。提交 plugins/<category>/<id>/plugin.json 与 README，增加版本并运行 scripts/build-github-catalog.py。提交生成的 index 和内容哈希 JSON，保留已发行的历史文件。经过源码／命令与隐私审核后发布；Application 下一次检查即可发现，用户明确 Install／更新才启用。目录和单个包分别限制 256 KiB／128 KiB，包下载校验 SHA-256、身份和目录说明。
+
+第三方开发者可提交到此仓库审核，也可直接分享 JSON，由管理员通过 UI 匯入。当前不提供任意仓库 URL 或执行任意核心代码的入口。插件命令仍使用管理员选择的 SSH 身份；哈希验证保证下载内容匹配目录，不提供命令沙箱。

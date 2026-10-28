@@ -8,7 +8,7 @@ on:
       version:
         description: Immutable component version
         required: true
-        default: '0.4.5'
+        default: '0.5.0'
 permissions:
   contents: read
 concurrency:
@@ -83,7 +83,7 @@ jobs:
               python3 -c 'import json,sys; from pathlib import Path; p=Path(sys.argv[1]); rows=json.loads(p.read_text()) if p.exists() else []; [print(json.dumps({key:row.get(key) for key in ("RuleID","File","StartLine","EndLine")})) for row in rows]' "$report"
               exit 1
             fi
-            "$AUDIT_TOOLS/trivy" image --quiet --scanners vuln --severity HIGH,CRITICAL --exit-code 1 "$image"
+            "$AUDIT_TOOLS/trivy" image --quiet --db-repository ghcr.io/aquasecurity/trivy-db:2 --timeout 5m --scanners vuln --severity HIGH,CRITICAL --exit-code 1 "$image"
           done
       - name: Publish immutable images
         shell: bash

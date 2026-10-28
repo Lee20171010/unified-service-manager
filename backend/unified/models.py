@@ -87,6 +87,8 @@ class ResourceOperation(Input):
 
 
 class PluginOperation(Input):
+    version: str | None = Field(default=None, max_length=100)
+    checksum: str | None = Field(default=None, pattern=r"^[a-f0-9]{64}$")
     action: Literal["install", "update", "enable", "disable", "remove", "rollback"]
 
 

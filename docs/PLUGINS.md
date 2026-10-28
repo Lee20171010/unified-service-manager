@@ -1,6 +1,6 @@
 # Plugin lifecycle — accepted target specification
 
-Status: product design specification. Current concrete integrations and authoring types are listed in [PLUGIN-CATALOG.md](PLUGIN-CATALOG.md). UI creation/import/export delivered in 0.4 is documented in [PLUGIN-AUTHORING.md](PLUGIN-AUTHORING.md). The delivered 0.3 subset and precise execution boundaries are documented in [RUNTIME-0.3.md](RUNTIME-0.3.md); use that document for current deployment and package authoring. This specification also retains future refinements.
+Status: product design specification. Current concrete integrations and authoring types are listed in [PLUGIN-CATALOG.md](PLUGIN-CATALOG.md). UI creation/import/export delivered in 0.4 is documented in [PLUGIN-AUTHORING.md](PLUGIN-AUTHORING.md). The delivered 0.3 subset and precise execution boundaries are documented in [RUNTIME-0.3.md](RUNTIME-0.3.md); use PLUGIN-CATALOG.md and PLUGIN-AUTHORING.md for current distribution and authoring. This specification also retains future refinements.
 
 ## Product contract
 
@@ -9,6 +9,10 @@ Every integration is an independently packaged plugin. The project may publish r
 The administrator installs a plugin explicitly from the Plugin page. Successful installation makes its capabilities available to both Web and Android through the shared Application Layer. Installation is server-wide: clients do not install their own copies. Package installation, service definitions and supported plugin updates require no rebuild of the central Application image.
 
 The core owns hosts, authentication, plugin lifecycle, validated parameter binding, jobs, concurrency locks, persistent logs, transport primitives and shared backup integrity policy. Integration-specific commands, scripts, configuration schemas, status parsing and application definitions belong to plugin packages. Core transport support alone does not expose a selectable integration.
+
+## Delivered sources · 0.5
+
+Docker Compose, generic npm management and WebDAV definitions ship in the image at /builtin-plugins. Specific software definitions are distributed through the official GitHub metadata index and content-addressed JSON files. Application refreshes metadata at startup/every six hours and on manual request, while Install/Update explicitly downloads and activates a validated local copy. User-created/imported JSON takes precedence and persists under data. Existing installed versions continue offline. See PLUGIN-CATALOG.md for the source layout and legacy-volume migration. The following broader lifecycle specification retains future refinements beyond interface v1.
 
 ## Categories and package identity
 
@@ -91,7 +95,9 @@ The current package folders and validated JSON interface are delivered in 0.3; `
 Proposed server layout:
 
 ```text
-/plugin-catalog/             # read-only available package source, mounted separately
+/builtin-plugins/            # generic definitions supplied by the image
+/plugin-catalog/             # optional read-only legacy/custom migration source
+/data/plugins/official/      # GitHub metadata and checksum-pinned downloads
 /data/plugins/
   staging/                  # validated installation staging
   packages/<id>/<version>/  # immutable installed package versions

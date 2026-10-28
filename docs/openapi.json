@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Unified Application Layer",
-    "version": "0.4.5"
+    "version": "0.5.0"
   },
   "paths": {
     "/healthz": {
@@ -217,6 +217,27 @@
       "get": {
         "summary": "Plugins",
         "operationId": "plugins_api_v1_plugins_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/plugin-catalog/refresh": {
+      "post": {
+        "summary": "Refresh Plugin Catalog",
+        "operationId": "refresh_plugin_catalog_api_v1_plugin_catalog_refresh_post",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1120,6 +1141,30 @@
       },
       "PluginOperation": {
         "properties": {
+          "version": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 100
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version"
+          },
+          "checksum": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Checksum"
+          },
           "action": {
             "type": "string",
             "enum": [

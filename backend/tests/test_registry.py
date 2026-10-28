@@ -287,9 +287,10 @@ def test_demo_never_invokes_real_transports_or_backup_hooks(tmp_path, monkeypatc
         "unified.adapters.applications.DirectorySnapshot.prepare", forbidden
     )
     cfg = Config(mode="demo", token=DEMO_TOKEN, data_dir=tmp_path, demo_delay=0.001)
-    with TestClient(
-        create_app(cfg), headers={"Authorization": "Bearer " + cfg.token}
-    ) as c:
+    from catalog_fixture import seed_catalog
+    api = create_app(cfg)
+    seed_catalog(api.state.application)
+    with TestClient(api, headers={"Authorization": "Bearer " + cfg.token}) as c:
         for id in ("compose","magpie","webdav"):
             assert c.post("/api/v1/plugins/"+id,json={"action":"install"}).status_code==200
         for path, body in [

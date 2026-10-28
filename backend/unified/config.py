@@ -17,11 +17,9 @@ class Config:
     webdav_password: str = ""
     demo_delay: float = 1.0
     job_timeout: int = 1800
-    plugin_catalog: Path = Path(
-        os.getenv(
-            "PLUGIN_CATALOG", str(Path(__file__).resolve().parents[2] / "plugins")
-        )
-    )
+    # Optional legacy/custom mount; official definitions live elsewhere.
+    plugin_catalog: Path = Path("/plugin-catalog")
+    builtin_catalog: Path = Path(os.getenv("BUILTIN_PLUGINS", str(Path(__file__).resolve().parents[2] / "plugins")))
 
     @classmethod
     def from_env(cls):
@@ -35,6 +33,7 @@ class Config:
             webdav_user=os.getenv("WEBDAV_USER", ""),
             webdav_password=os.getenv("WEBDAV_PASSWORD", ""),
             plugin_catalog=Path(os.getenv("PLUGIN_CATALOG", str(cls.plugin_catalog))),
+            builtin_catalog=Path(os.getenv("BUILTIN_PLUGINS", str(cls.builtin_catalog))),
             demo_delay=float(os.getenv("DEMO_DELAY", "1")),
         )
 
