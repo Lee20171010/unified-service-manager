@@ -132,9 +132,9 @@ internal fun UnifiedScreen(
                     FormField("address", "IP / DNS 位址"),
                     FormField("port", "SSH Port", "22"),
                     FormField("username", "SSH 使用者", "unified"),
-                    FormField("key", "私鑰檔案名稱", "id_ed25519"),
+                    FormField("key", "私鑰檔案名稱"),
                 ),
-                "私鑰與經驗證的 known_hosts 由中央服務掛載管理。",
+                "填中央 SSH 目錄中的實際檔名，例如 nas_key。OMV 預設為 ./ssh/；known_hosts 也放在這裡。",
             )
     }
     fun backup() {

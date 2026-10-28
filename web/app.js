@@ -191,7 +191,7 @@ function render() {
   $("#breadcrumb").textContent = navs.find((x) => x[0] === page)[1];
   if (!data) {
     $("#main").innerHTML = head(
-      "UNIFIED / 0.6.0",
+      "UNIFIED / 0.6.1",
       getToken() ? "正在連接伺服器" : "連接伺服器",
       getToken() ? "正在自動連線；網路恢復後會重新載入最新狀態。" : "首次設定後，此瀏覽器會自動連接目前站點。",
       button("伺服器設定", "connect", "", "primary"),
@@ -679,8 +679,8 @@ document.addEventListener("click", async (e) => {
           field("IP / DNS 位址", "address") +
           field("SSH Port", "port", "22", "", "number") +
           field("SSH 使用者", "username", "unified") +
-          field("私鑰檔案名稱", "key", "id_ed25519") +
-          '<p class="description">私鑰與 known_hosts 由伺服器掛載管理。</p>',
+          field("私鑰檔案名稱", "key", "", "例如 nas_key") +
+          '<p class="description">填中央 SSH 目錄中的實際檔名，例如 nas_key。OMV 預設為 ./ssh/；known_hosts 也放在這裡。</p>',
         "host-form",
         submit("新增主機"),
       );
@@ -834,9 +834,9 @@ window.addEventListener("hashchange", () => {
 page = navs.some((n) => n[0] === location.hash.slice(1))
   ? location.hash.slice(1)
   : "services";
-$(".brand-sub").textContent = "SERVICE MANAGER / 0.6.0";
+$(".brand-sub").textContent = "SERVICE MANAGER / 0.6.1";
 $(".profile div span").textContent = "個人工作區";
-$(".small-badge").textContent = "0.6.0";
+$(".small-badge").textContent = "0.6.1";
 render();
 try {
   if (!getToken()) {

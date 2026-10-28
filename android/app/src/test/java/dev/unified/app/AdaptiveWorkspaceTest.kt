@@ -3,11 +3,13 @@ package dev.unified.app
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.StateRestorationTester
 import androidx.compose.ui.test.junit4.createComposeRule
@@ -153,7 +155,8 @@ class AdaptiveWorkspaceTest {
         compose.onNodeWithText("主機.").assertIsDisplayed()
         compose.runOnIdle { size = DpSize(820.dp, 900.dp) }
         compose.onNodeWithText("主機.").assertIsDisplayed()
-        compose.onNodeWithText("選擇一個項目查看詳情").assertIsDisplayed()
+        compose.onNodeWithText("選擇一個項目查看詳情").assertDoesNotExist()
+        compose.onNodeWithTag("single-pane").assertIsDisplayed()
         val first = compose.onNode(hasText("受管對象") and hasClickAction()).getUnclippedBoundsInRoot()
         val last = compose.onNode(hasText("插件") and hasClickAction()).getUnclippedBoundsInRoot()
         assertEquals(first.left.value, last.left.value, 1f)
@@ -177,6 +180,54 @@ class AdaptiveWorkspaceTest {
         compose.onNodeWithText("選擇一個項目查看詳情").assertDoesNotExist()
         assertEquals(0, requests)
         assertBottomNavigation()
+    }
+
+    @Test
+    fun wideListUsesFullWidthUntilSelectionAndAfterClose() {
+        compose.setContent {
+            DeviceConfigurationOverride(
+                DeviceConfigurationOverride.WindowSize(DpSize(820.dp, 900.dp))
+            ) {
+                UnifiedTheme(ThemeMode.Dark) {
+                    var selected by rememberSaveable { mutableStateOf<String?>(null) }
+                    AdaptiveWorkspace(
+                        "hosts",
+                        selected,
+                        true,
+                        { selected = null },
+                        Modifier.fillMaxSize(),
+                        detail = { _, wide ->
+                            DetailPane("Details", wide, { selected = null }) {
+                                Text("Selected host")
+                            }
+                        },
+                    ) {
+                        Box(Modifier.fillMaxSize().testTag("fixture-list")) {
+                            TextButton(onClick = { selected = "fixture" }) { Text("Select host") }
+                        }
+                    }
+                }
+            }
+        }
+        fun assertFullWidth() {
+            val container = compose.onNodeWithTag("single-pane").getUnclippedBoundsInRoot()
+            val list = compose.onNodeWithTag("fixture-list").getUnclippedBoundsInRoot()
+            assertEquals(
+                (container.right - container.left).value,
+                (list.right - list.left).value,
+                1f,
+            )
+            compose.onNodeWithText("選擇一個項目查看詳情").assertDoesNotExist()
+        }
+        assertFullWidth()
+        compose.onNodeWithText("Select host").performClick()
+        compose.onNodeWithTag("two-pane").assertIsDisplayed()
+        compose.onNodeWithText("Selected host").assertIsDisplayed()
+        val container = compose.onNodeWithTag("two-pane").getUnclippedBoundsInRoot()
+        val list = compose.onNodeWithTag("fixture-list").getUnclippedBoundsInRoot()
+        org.junit.Assert.assertTrue((list.right - list.left) < (container.right - container.left))
+        compose.onNodeWithText("關閉詳情").performClick()
+        assertFullWidth()
     }
 
     private fun assertBottomNavigation() {

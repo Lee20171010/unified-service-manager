@@ -74,6 +74,22 @@ class ScreenTest {
     }
 
     @Test
+    @Config(qualifiers = "w320dp-h891dp")
+    fun newHostRequiresExplicitPrivateKeyFilename() {
+        screen()
+        compose.onNode(hasText("主機") and hasClickAction()).performClick()
+        compose.onNodeWithContentDescription("新增").performClick()
+        compose.onNodeWithText("主機名稱").performScrollTo().performTextInput("Fixture")
+        compose.onNodeWithText("IP / DNS 位址").performScrollTo().performTextInput("fixture.test")
+        compose.onNodeWithText("私鑰檔案名稱").performScrollTo().assertTextEquals("私鑰檔案名稱", "")
+        compose.onNodeWithText("確認").assertIsNotEnabled()
+        compose.onNodeWithText("私鑰檔案名稱").performTextInput("nas_key")
+        compose.onNodeWithText("確認").performClick()
+        assertEquals("/hosts", submitted?.first)
+        assertEquals("nas_key", submitted?.second?.getString("key"))
+    }
+
+    @Test
     fun serviceOperationsAndTerminalHaveDistinctCallbacks() {
         screen()
         compose.onNodeWithText("受管對象詳情與操作 →").performScrollTo().performClick()

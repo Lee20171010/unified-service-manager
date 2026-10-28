@@ -1,6 +1,6 @@
 # Web / native Android parity · 0.4
 
-Application/Web/Android 0.6.0 retain API/schema v1. Both clients create Compose/npm/command plugins and copy existing manifests, alongside central GitHub catalog refresh, verified downloads and persistent custom definitions. Both clients use the same installed plugin descriptors and managed operations.
+Application/Web/Android 0.6.1 retain API/schema v1. Both clients create Compose/npm/command plugins and copy existing manifests, alongside central GitHub catalog refresh, verified downloads and persistent custom definitions. Both clients use the same installed plugin descriptors and managed operations.
 
 Both clients use the same central API; no commands run on the client. Themes remain local preferences.
 
@@ -56,3 +56,7 @@ Android adapts bottom navigation/rail and host/resource list-detail panes to win
 ## Personal plugin authoring · 0.6.0
 
 Both clients offer equivalent resource-kind and management-method choices, npm scope/runtime/version fields, extension host IDs and full-manifest copying. Save only updates the available catalog; explicit Install activates capabilities. Compose IDs are independent, with shared host/directory locks. Backup application/storage packages retain their dedicated interfaces.
+
+## Host entry and unselected layout · 0.6.1
+
+Both clients require an explicit private-key filename in the new-host form and explain its central SSH mount location. Android shows a full-width list until a detail is selected, then uses list/detail panes when space permits; closing returns to the full-width list. Web retains its existing detail presentation.

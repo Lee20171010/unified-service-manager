@@ -29,7 +29,7 @@ android/gradlew -p android :app:assembleDebug --max-workers=1
 - `MainViewModelTest`: virtual-time coroutine tests for failed connections, delayed responses, repeated submission, polling cancellation and console session isolation. `ApplicationClient` and `ConnectionStore` are small constructor-injected boundaries; production uses `Api` and Android Keystore-backed `Credentials`.
 - `ScreenTest`: Compose semantics tests for managed service operations, restore confirmation, backup application selection, saved navigation, connection dialog behavior and Terminal input. Robolectric runs these locally with an API 28 runtime; there is no live server or physical device dependency.
 
-The connection-dialog test uses a 320 dp window because of the upstream [Robolectric dialog measurement issue #8460](https://github.com/robolectric/robolectric/issues/8460). Other screen tests use 411 × 891 dp. The test-only qualifier avoids that runtime limitation; the product layout is unchanged. Wider dialog layout and keyboard behavior remain part of device acceptance.
+The connection-dialog and new-host key-field tests use a 320 dp window because of the upstream [Robolectric dialog measurement issue #8460](https://github.com/robolectric/robolectric/issues/8460). Other screen tests use 411 × 891 dp. The test-only qualifier avoids that runtime limitation; the product layout is unchanged. Wider dialog layout and keyboard behavior remain part of device acceptance.
 
 Reports are generated under `android/app/build/reports/tests/testDebugUnitTest/`; XML evidence is under `android/app/build/test-results/testDebugUnitTest/`. Do not commit build output. A failed test must be resolved before replacing the downloadable APK.
 

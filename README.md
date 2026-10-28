@@ -1,6 +1,6 @@
 # Unified Service Manager
 
-Manage services, packages and configuration snapshots across multiple hosts from a Web UI or native Android app. Both clients use the same authenticated central application API. Release **0.6.0** adds personal Compose, npm and command plugin builders plus full-manifest copying in both clients. Generic builtins, verified GitHub packages and custom definitions share explicit installation and update controls. Android adapts navigation and list/detail layouts to phones, unfolded devices and tablets.
+Manage services, packages and configuration snapshots across multiple hosts from a Web UI or native Android app. Both clients use the same authenticated central application API. Release **0.6.1** includes personal Compose, npm and command plugin builders plus full-manifest copying in both clients. Generic builtins, verified GitHub packages and custom definitions share explicit installation and update controls. Android adapts navigation and list/detail layouts to phones, unfolded devices and tablets, using the full list width until an item is selected. New-host forms ask for the actual private-key filename from the central SSH mount.
 
 ## Deploy with Docker Compose
 
@@ -9,7 +9,7 @@ Images are published under:
 - `ghcr.io/lee20171010/unified-application:latest`
 - `ghcr.io/lee20171010/unified-web:latest`
 
-`latest` tracks the most recent reviewed stable release. Set `IMAGE_TAG=0.6.0` to pin this release. Pulling downloads images; Up recreates containers when needed. Official metadata refreshes at startup and every six hours, with a manual check in both clients. Install/Update downloads the selected package; installed execution content changes only on explicit approval. See [the catalog guide](docs/PLUGIN-CATALOG.md).
+`latest` tracks the most recent reviewed stable release. Set `IMAGE_TAG=0.6.1` to pin this release. Pulling downloads images; Up recreates containers when needed. Official metadata refreshes at startup and every six hours, with a manual check in both clients. Install/Update downloads the selected package; installed execution content changes only on explicit approval. See [the catalog guide](docs/PLUGIN-CATALOG.md).
 
 Use [deploy/omv/compose.yaml](deploy/omv/compose.yaml) with [env.example](deploy/omv/env.example). This configuration also works with ordinary Docker Compose. Set a unique `ADMIN_TOKEN` of at least 32 characters, then run:
 

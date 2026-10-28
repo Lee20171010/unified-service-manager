@@ -195,6 +195,7 @@ internal fun FormDialog(
                                 }
                             },
                             label = { Text(field.label) },
+                            modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             visualTransformation =
                                 if (field.secret) PasswordVisualTransformation()

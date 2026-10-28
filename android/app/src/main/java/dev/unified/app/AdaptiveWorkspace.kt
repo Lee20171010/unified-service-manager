@@ -37,7 +37,7 @@ internal fun AdaptiveWorkspace(
     val currentContent by rememberUpdatedState(content)
     BoxWithConstraints(modifier) {
         // Measure after the navigation rail and insets. Each pane gets at least 320dp.
-        val twoPane = supportsDetails && maxWidth >= 664.dp
+        val twoPane = supportsDetails && detailKey != null && maxWidth >= 664.dp
         val currentTwoPane by rememberUpdatedState(twoPane)
         val directive =
             calculatePaneScaffoldDirective(windowInfo)

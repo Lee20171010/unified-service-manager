@@ -62,7 +62,7 @@ Both clients offer light, dark and system appearance, defaulting to system. Web 
 
 ## Android adaptive workspace
 
-Android 0.5.1 uses Material 3 Adaptive 1.3.0, Navigation 3 1.2.0 and NavigationSuiteScaffold. Navigation follows the actual window size/posture. Host and resource details are NavEntry destinations handled by ListDetailSceneStrategy. The strategy uses the content width after rail/insets: at least 664 dp enables two panes (320 dp each plus a 24 dp gap). Narrow windows show the selected detail with a back action. Hinge exclusions come from the library's window posture directive; device model names do not control layout.
+Android 0.5.1 uses Material 3 Adaptive 1.3.0, Navigation 3 1.2.0 and NavigationSuiteScaffold. Navigation follows the actual window size/posture. Host and resource details are NavEntry destinations handled by ListDetailSceneStrategy. The strategy uses the content width after rail/insets: a selected detail and at least 664 dp enable two panes (320 dp each plus a 24 dp gap). Narrow windows show the selected detail with a back action. Hinge exclusions come from the library's window posture directive; device model names do not control layout.
 
 Page, filters, selected IDs and list/console scroll positions use Compose saveable state. WorkspaceDrafts is owned by MainViewModel: resource/host forms, connection edits and unsent console input survive Activity recreation in memory. Drafts are excluded from saved-state bundles and diagnostics, cleared on the relevant close or workspace switch, and lost after process death. Resizing is presentation-only; it neither submits work nor replays terminal input. Plugin JSON editor state retains its existing saveable behavior.
 

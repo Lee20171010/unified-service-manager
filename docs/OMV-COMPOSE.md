@@ -1,6 +1,6 @@
-# Docker / OMV Compose deployment · 0.6.0
+# Docker / OMV Compose deployment · 0.6.1
 
-The release uses two images: `ghcr.io/lee20171010/unified-application:0.6.0` and `ghcr.io/lee20171010/unified-web:0.6.0`. Public images can be pulled without registry login. The current image platform is linux/amd64.
+The release uses two images: `ghcr.io/lee20171010/unified-application:0.6.1` and `ghcr.io/lee20171010/unified-web:0.6.1`. Public images can be pulled without registry login. The current image platform is linux/amd64.
 
 ## OMV setup
 
@@ -16,7 +16,7 @@ WEBDAV_USER=
 WEBDAV_PASSWORD=
 ```
 
-Generate a token with `openssl rand -hex 32`, or retain the existing token when updating. Save and select **Pull**, then **Up**. The shipped configuration uses `IMAGE_TAG=latest` with `pull_policy: always`; Up also checks the registry. Set `IMAGE_TAG=0.6.0` to pin this release. No image build, tar download, manual mkdir/chown or separate initialization service is required.
+Generate a token with `openssl rand -hex 32`, or retain the existing token when updating. Save and select **Pull**, then **Up**. The shipped configuration uses `IMAGE_TAG=latest` with `pull_policy: always`; Up also checks the registry. Set `IMAGE_TAG=0.6.1` to pin this release. No image build, tar download, manual mkdir/chown or separate initialization service is required.
 
 Relative mounts resolve beside the Compose file. Select the desired data disk in OMV's Compose settings before initial deployment.
 

@@ -94,11 +94,55 @@ class AdaptiveScreenshotTest {
         capture("plugins-wide")
     }
 
+    @Test
+    fun captureEmptyWideWorkspaceAndHostForm() {
+        compose.setContent {
+            DeviceConfigurationOverride(
+                DeviceConfigurationOverride.WindowSize(DpSize(820.dp, 900.dp))
+            ) {
+                UnifiedTheme(ThemeMode.Dark) {
+                    UnifiedScreen(
+                        UiState(
+                            snapshot =
+                                Snapshot(
+                                    "demo",
+                                    emptyList(),
+                                    emptyList(),
+                                    emptyList(),
+                                    emptyList(),
+                                    "Fixture",
+                                ),
+                            connected = true,
+                        ),
+                        "https://demo.example.test" to "fixture-token",
+                        { _, _ -> },
+                        { _, _, _ -> },
+                        {},
+                        {},
+                        {},
+                    )
+                }
+            }
+        }
+        compose.onNodeWithTag("single-pane").assertIsDisplayed()
+        capture("empty-resources-wide")
+        compose.onNode(hasText("主機") and hasClickAction()).performClick()
+        compose.onNodeWithText("選擇一個項目查看詳情").assertDoesNotExist()
+        capture("empty-hosts-wide")
+        compose.onNodeWithContentDescription("新增").performClick()
+        compose.onNodeWithText("私鑰檔案名稱").performScrollTo()
+        capture("host-key-form-wide")
+    }
+
     private fun capture(name: String) {
         val file = File("build/reports/adaptive-screenshots/$name.png")
         requireNotNull(file.parentFile).mkdirs()
-        compose.onNodeWithTag("unified-screen").captureToImage().asAndroidBitmap().let { bitmap ->
-            file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
-        }
+        (if (name == "host-key-form-wide") compose.onNode(isDialog())
+            else compose.onNodeWithTag("unified-screen"))
+            .captureToImage()
+            .asAndroidBitmap()
+            .let { bitmap ->
+                file.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+            }
     }
 }

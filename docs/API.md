@@ -1,6 +1,6 @@
 # API · 0.4
 
-Application/Web/Android 0.6.0 retain API/schema v1. Both clients create Compose/npm/command plugins and copy existing manifests, alongside central GitHub catalog refresh, verified downloads and persistent custom definitions. Both clients use the same installed plugin descriptors and managed operations.
+Application/Web/Android 0.6.1 retain API/schema v1. Both clients create Compose/npm/command plugins and copy existing manifests, alongside central GitHub catalog refresh, verified downloads and persistent custom definitions. Both clients use the same installed plugin descriptors and managed operations.
 
 Web, Android and Application 0.4.0 add plugin document authoring. Existing resource and job APIs remain compatible; schema version stays v1.
 
@@ -69,3 +69,7 @@ The adaptive native layout uses existing API v1 endpoints. Window resizing and A
 ## Personal plugin authoring · 0.6.0
 
 API/schema remain v1. Compose manifests may use independent IDs with resource_kind=service, category=service-management, one compose_dir field, and a nonempty subset of refresh/start/stop/restart/upgrade. Active descriptors honor manifest identity, version, fields and operations. Settings use the declared directory default and existing absolute-path validation. Jobs for the same host/directory share installation locks across plugin IDs. New builders and full-document copies use existing export/validate/import endpoints. Copy clients send create_only=true in both document requests. Application rejects IDs present in local, GitHub or installed catalogs and repeats this check under its lifecycle guard on save. Imports default create_only=false and retain the explicit preview-and-replace contract. No endpoint activates plugins during authoring.
+
+## Host key entry · 0.6.1
+
+New Web/Android forms require the administrator to enter the central mounted private-key filename. API/schema remain v1; HostInput.key retains id_ed25519 as its compatibility default for existing clients. This is a filename reference, not key discovery, upload or generation. Existing stored references and verified known_hosts behavior remain unchanged.
